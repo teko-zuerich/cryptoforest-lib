@@ -49,9 +49,9 @@ public class LevelConfig : ItemConfig
 
     internal LevelConfig(CryptoForestConfig config) : base(config.ConfigGuid, config.KeyIV, ItemType.Level)
     {
-        Items = new Dictionary<string, ItemConfig>();
+        Items = [];
         // TODO create sublevels
-        Sublevels = new Dictionary<string, LevelConfig>();
+        Sublevels = [];
     }
 
     // TODO LoadConfigAsync<T>

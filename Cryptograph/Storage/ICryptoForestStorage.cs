@@ -1,4 +1,4 @@
-﻿namespace CryptoForestLibrary.Storage;
+﻿namespace CryptoForestLibrary.Cryptograph.Storage;
 
 /// <summary>
 /// The interface used to define a storage system implementation for the CryptoForest

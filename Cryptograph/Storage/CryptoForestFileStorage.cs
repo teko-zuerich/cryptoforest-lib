@@ -1,4 +1,8 @@
-﻿namespace CryptoForestLibrary.Storage;
+﻿namespace CryptoForestLibrary.Cryptograph.Storage;
+
+/// <summary>
+/// The file system implementation for the CryptoForest
+/// </summary>
 public class CryptoForestFileStorage : ICryptoForestStorage
 {
     private readonly string _cryptoForestDirectory;
