@@ -1,4 +1,4 @@
-﻿namespace CryptoForestLibrary;
+﻿namespace CryptoForestLibrary.DirectoryStructure;
 
 /// <summary>
 /// FileSearch can be used to get the directory structure with defined search parameters to specify further what should be included or excluded

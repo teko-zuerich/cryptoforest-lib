@@ -1,4 +1,4 @@
-﻿namespace CryptoForestLibrary;
+﻿namespace CryptoForestLibrary.Config;
 
 /// <summary>
 /// Used for exporting levels of a CryptoForest

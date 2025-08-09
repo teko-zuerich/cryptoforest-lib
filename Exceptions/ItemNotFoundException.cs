@@ -1,4 +1,4 @@
-﻿namespace CryptoForestLibrary;
+﻿namespace CryptoForestLibrary.Exceptions;
 
 /// <summary>
 /// Used when an item cannot be found in any level

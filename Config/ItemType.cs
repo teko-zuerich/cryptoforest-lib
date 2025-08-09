@@ -1,4 +1,4 @@
-﻿namespace CryptoForestLibrary;
+﻿namespace CryptoForestLibrary.Config;
 
 /// <summary>
 /// Used to define the type of an ItemConfig

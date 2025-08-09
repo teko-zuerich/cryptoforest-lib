@@ -1,4 +1,4 @@
-﻿namespace CryptoForestLibrary;
+﻿namespace CryptoForestLibrary.DirectoryStructure;
 
 /// <summary>
 /// Used for storing the directory of a directory structure

@@ -1,4 +1,4 @@
-﻿namespace CryptoForestLibrary;
+﻿namespace CryptoForestLibrary.Config;
 
 /// <summary>
 /// Used to store item values in an immutable config

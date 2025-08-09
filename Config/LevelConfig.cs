@@ -1,4 +1,6 @@
-﻿namespace CryptoForestLibrary;
+﻿using CryptoForestLibrary.Exceptions;
+
+namespace CryptoForestLibrary.Config;
 
 /// <summary>
 /// Used for storing the values of a level

@@ -1,4 +1,4 @@
-﻿namespace CryptoForestLibrary;
+﻿namespace CryptoForestLibrary.Config;
 
 /// <summary>
 /// Used to hold an immutable Key and IV
