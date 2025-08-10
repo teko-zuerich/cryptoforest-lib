@@ -7,5 +7,5 @@ public enum OnFileExists
 {
     Throw = 0,
     Replace = 1,
-    Ignore = 2
+    Skip = 2
 }

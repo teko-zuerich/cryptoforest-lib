@@ -14,8 +14,8 @@ public interface ICryptoForestStorage
     public Stream GetStream(Guid entryGuid, bool asReadonly);
 
     /// <summary>
-    /// Called after the operations are finished in the CryptoForestCryptograph.
-    /// Can be used to define actions for the storage after the operations have finished.
+    /// Called after the encrpytions are finished in the CryptoForestCryptograph.
+    /// Can be used to define actions for the storage after the encryptions have finished.
     /// </summary>
     /// <param name="storageStream">The current storage stream</param>
     public Task FinalizeAsync(Stream storageStream, CancellationToken cancellationToken = default);

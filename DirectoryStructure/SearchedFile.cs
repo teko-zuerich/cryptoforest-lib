@@ -9,7 +9,7 @@ public class SearchedFile
 
     public long FileDataLength { get; init; }
 
-    public byte[]? FileData { get; init; }
+    public byte[]? FileData { get; set; }
 
     internal SearchedFile(string fileName, long fileDataLength)
     {
