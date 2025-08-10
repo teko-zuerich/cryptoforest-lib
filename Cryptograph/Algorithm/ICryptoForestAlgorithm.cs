@@ -22,7 +22,7 @@ public interface ICryptoForestAlgorithm
     /// <param name="keyIV">The key and IV used during the decryption</param>
     /// <param name="storageStream">The readonly storage stream from the ICryptoForestStorage used as the underlying stream</param>
     /// <param name="readFromStreamAsync">The function passed where the CryptoStream can be used to decrypt</param>
-    public Task DecryptFromStreamAsync(KeyIV keyIV, Stream storageStream, Func<CryptoStream, CancellationToken, Task> readFromStreamAsync, CancellationToken cancellationToken = default);
+    public Task<T> DecryptFromStreamAsync<T>(KeyIV keyIV, Stream storageStream, Func<CryptoStream, CancellationToken, Task<T>> readFromStreamAsync, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Generates a random secure Key and IV from the algorithm

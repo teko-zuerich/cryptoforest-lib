@@ -36,7 +36,7 @@ public class CryptoForestAesAlgorithm : ICryptoForestAlgorithm
     /// <param name="storageStream">The storage stream from the ICryptoForestStorage</param>
     /// <param name="readFromStreamAsync">The function passed where the CryptoStream can be used to decrypt</param>
     /// <exception cref="ArgumentException">Thrown when the KeyIV is not a valid 256 bit key and IV</exception>
-    public async Task DecryptFromStreamAsync(KeyIV keyIV, Stream storageStream, Func<CryptoStream, CancellationToken, Task> readFromStreamAsync, CancellationToken cancellationToken = default)
+    public async Task<T> DecryptFromStreamAsync<T>(KeyIV keyIV, Stream storageStream, Func<CryptoStream, CancellationToken, Task<T>> readFromStreamAsync, CancellationToken cancellationToken = default)
     {
         if (!keyIV.Validate(32))
         {
@@ -46,7 +46,7 @@ public class CryptoForestAesAlgorithm : ICryptoForestAlgorithm
         using var aes = Aes.Create();
         using var decryptor = aes.CreateDecryptor(keyIV.Key, keyIV.IV);
         using var cryptoStream = new CryptoStream(storageStream, decryptor, CryptoStreamMode.Read);
-        await readFromStreamAsync(cryptoStream, cancellationToken);
+        return await readFromStreamAsync(cryptoStream, cancellationToken);
     }
 
     /// <summary>
