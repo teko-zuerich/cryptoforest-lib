@@ -11,10 +11,12 @@ public class FileSearch
 
     public bool IncludePaths { get; init; }
 
+    public bool SpecificFiles { get; init; }
+
     /// <summary>
     /// Creates a FileSearch which can search the whole directory structure of the specified directory
     /// </summary>
-    /// <param name="searchedDirectory">The directory to search</param>
+    /// <param name="searchedDirectory">The directory to search in</param>
     public FileSearch(string searchedDirectory)
     {
         SearchedDirectory = searchedDirectory;
@@ -26,12 +28,14 @@ public class FileSearch
     /// </summary>
     /// <param name="searchedDirectory">The directory to search</param>
     /// <param name="searchedPaths">The paths to include or exclude</param>
-    /// <param name="includePaths">Specifies if the paths should be used to specifically include files or to exclude certain files and directories</param>
-    public FileSearch(string searchedDirectory, IEnumerable<string> searchedPaths, bool includePaths)
+    /// <param name="includePaths">Specifies if the paths should be used to include or to exclude certain files and directories if the searched path is part of the path</param>
+    /// <param name="specificFiles">Specifies if the files in the searchedPath should be treated as specific files to include in a flattened structure</param>
+    public FileSearch(string searchedDirectory, IEnumerable<string> searchedPaths, bool includePaths, bool specificFiles)
     {
         SearchedDirectory = searchedDirectory;
         SearchedPaths = searchedPaths;
         IncludePaths = includePaths;
+        SpecificFiles = specificFiles;
     }
 
     /// <summary>
@@ -40,7 +44,7 @@ public class FileSearch
     /// <returns>Returns the found directory structure</returns>
     public SearchedDirectory GetDirectoryAndFileStructure()
     {
-        var searchedDirectory = new SearchedDirectory(SearchedDirectory);
+        var searchedDirectory = new SearchedDirectory(string.Empty);
         GetStructure(searchedDirectory);
 
         return searchedDirectory;
@@ -52,28 +56,25 @@ public class FileSearch
     /// </summary>
     /// <param name="searchedDirectory">The main SearchedDirectory which will contain the whole structure in the end</param>
     /// <param name="currentPath">The current path that is searched. Should not be set as it will be used in the recursion.</param>
-    /// <param name="fileId">The current fileId counter value. Should not be set as it will be used in the recursion.</param>
-    /// <returns>Returns the current fileId counter value</returns>
-    private long GetStructure(SearchedDirectory searchedDirectory, string currentPath = "", long fileId = 0)
+    private void GetStructure(SearchedDirectory searchedDirectory, string currentPath = "")
     {
         var fullPath = SearchedDirectory + (currentPath != string.Empty && !SearchedDirectory.EndsWith('/') && !SearchedDirectory.EndsWith('\\') ? "/" : "") + currentPath;
-        if (!IncludePaths)
+        if (!SpecificFiles)
         {
-            var files = Directory.GetFiles(fullPath).Where(f => !SearchedPaths.Contains(f));
-            var directories = Directory.GetDirectories(fullPath).Where(d => !SearchedPaths.Contains(d));
+            var files = Directory.GetFiles(fullPath).Where(f => IncludePaths ? SearchedPaths.Contains(f) : !SearchedPaths.Contains(f));
+            var directories = Directory.GetDirectories(fullPath).Where(d => IncludePaths ? SearchedPaths.Contains(d) : !SearchedPaths.Contains(d));
 
             foreach (var file in files)
             {
                 var fileInfo = new FileInfo(file);
-                searchedDirectory.ChildFiles.Add(new SearchedFile(fileId++, fileInfo.Name, fileInfo.Length));
+                searchedDirectory.ChildFiles.Add(new SearchedFile(fileInfo.Name, fileInfo.Length));
             }
 
             foreach (var directory in directories)
             {
                 var searchedSubDirectory = new SearchedDirectory(new DirectoryInfo(directory).Name);
                 searchedDirectory.ChildDirectories.Add(searchedSubDirectory);
-                // Recursively calls GetStructure for each subdirectory and updates fileId to avoid having multiple files with the same id as the id should be unique for the whole structure
-                fileId = GetStructure(searchedDirectory, currentPath + (currentPath != string.Empty ? "/" : "") + searchedSubDirectory.DirectoryName, fileId);
+                GetStructure(searchedDirectory, currentPath + (currentPath != string.Empty ? "/" : "") + searchedSubDirectory.DirectoryName);
             }
         }
         else
@@ -84,11 +85,9 @@ public class FileSearch
                 if (existingPath != null)
                 {
                     var fileInfo = new FileInfo(existingPath);
-                    searchedDirectory.ChildFiles.Add(new SearchedFile(fileId, fileInfo.Name, fileInfo.Length));
+                    searchedDirectory.ChildFiles.Add(new SearchedFile(fileInfo.Name, fileInfo.Length));
                 }
             }
         }
-
-        return fileId;
     }
 }
