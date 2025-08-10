@@ -139,17 +139,12 @@ internal class CryptoForestCryptograph<T>
         async Task<SearchedDirectory> DecryptFiles(CryptoStream cryptoStream, CancellationToken cancellationToken)
         {
             // Decrypt directory structure json
-            var headerBytes = new byte[8];
-            await cryptoStream.ReadAsync(headerBytes, cancellationToken);
-            var directoryStructureLength = int.Parse(Encoding.ASCII.GetString(headerBytes).Replace("\0", ""));
-            var directoryStructureData = new byte[directoryStructureLength];
-            await cryptoStream.ReadAsync(directoryStructureData, cancellationToken);
-            var directoryStructure = JsonSerializer.Deserialize<SearchedDirectory>(directoryStructureData);
+            var directoryStructure = await DecryptDirectoryStructureJsonAsync(cryptoStream, cancellationToken);
 
             // Decrypt directory structure
-            await DecryptDirectoryStructureAsync(directoryStructure!, cryptoStream, cancellationToken: cancellationToken);
+            await DecryptDirectoryStructureAsync(directoryStructure, cryptoStream, cancellationToken: cancellationToken);
 
-            return directoryStructure!;
+            return directoryStructure;
 
             async Task DecryptDirectoryStructureAsync(SearchedDirectory directoryStructure, CryptoStream cryptoStream, string currentPath = "", CancellationToken cancellationToken = default)
             {
@@ -193,12 +188,12 @@ internal class CryptoForestCryptograph<T>
             var directoryStructure = await DecryptDirectoryStructureJsonAsync(cryptoStream, cancellationToken);
 
             // Create directories
-            CreateDirectories(storageDirectory, directoryStructure!);
+            CreateDirectories(storageDirectory, directoryStructure);
 
             // Decrypt directory structure
-            await DecryptDirectoryStructureAsync(directoryStructure!, cryptoStream, cancellationToken: cancellationToken);
+            await DecryptDirectoryStructureAsync(directoryStructure, cryptoStream, cancellationToken: cancellationToken);
 
-            return directoryStructure!;
+            return directoryStructure;
 
             async Task DecryptDirectoryStructureAsync(SearchedDirectory directoryStructure, CryptoStream cryptoStream, string currentPath = "", CancellationToken cancellationToken = default)
             {
@@ -220,14 +215,14 @@ internal class CryptoForestCryptograph<T>
         }
     }
 
-    private static async Task<SearchedDirectory?> DecryptDirectoryStructureJsonAsync(CryptoStream cryptoStream, CancellationToken cancellationToken = default)
+    private static async Task<SearchedDirectory> DecryptDirectoryStructureJsonAsync(CryptoStream cryptoStream, CancellationToken cancellationToken = default)
     {
         var headerBytes = new byte[8];
         await cryptoStream.ReadAsync(headerBytes, cancellationToken);
         var directoryStructureLength = int.Parse(Encoding.ASCII.GetString(headerBytes).Replace("\0", ""));
         var directoryStructureData = new byte[directoryStructureLength];
         await cryptoStream.ReadAsync(directoryStructureData, cancellationToken);
-        return JsonSerializer.Deserialize<SearchedDirectory>(directoryStructureData);
+        return JsonSerializer.Deserialize<SearchedDirectory>(directoryStructureData)!;
     }
 
     private static void CreateDirectories(string storageDirectory, SearchedDirectory searchedDirectory, string currentPath = "")
