@@ -65,7 +65,7 @@ public class LevelConfig : ItemConfig
 
     // TODO LoadConfigAsync<T>
 
-    internal async Task SaveConfigAsync<T>(CryptoForestCryptograph<T> cryptograph, CancellationToken cancellationToken = default)
+    internal async Task SaveConfigAsync<T>(CryptoForestCryptograph<T> cryptograph, CancellationToken cancellationToken)
         where T : ICryptoForestAlgorithm, new()
     {
         throw new NotImplementedException();

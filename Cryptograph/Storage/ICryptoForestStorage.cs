@@ -18,7 +18,7 @@ public interface ICryptoForestStorage
     /// Can be used to define actions for the storage after the encryptions have finished.
     /// </summary>
     /// <param name="storageStream">The current storage stream</param>
-    public Task FinalizeAsync(Stream storageStream, CancellationToken cancellationToken = default);
+    public Task FinalizeAsync(Stream storageStream, CancellationToken cancellationToken);
 
     /// <summary>
     /// Called to determine if an entry already exists in the storage before creating it.
@@ -32,5 +32,5 @@ public interface ICryptoForestStorage
     /// Removes an entry from the storage.
     /// </summary>
     /// <param name="entryGuid">The GUID of the entry to remove</param>
-    public Task RemoveEntryAsync(Guid entryGuid, CancellationToken cancellationToken = default);
+    public Task RemoveEntryAsync(Guid entryGuid, CancellationToken cancellationToken);
 }

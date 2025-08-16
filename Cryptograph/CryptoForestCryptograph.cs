@@ -36,7 +36,7 @@ internal class CryptoForestCryptograph<T>
     /// <param name="entryGuid">The GUID of the new entry in the CryptoForest</param>
     /// <returns>Returns the generated Key and IV</returns>
     /// <exception cref="ArgumentException">Thrown when the text is empty or null</exception>
-    internal async Task<KeyIV> EncryptTextAsync(string text, Guid entryGuid, CancellationToken cancellationToken = default)
+    internal async Task<KeyIV> EncryptTextAsync(string text, Guid entryGuid, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(text))
         {
@@ -63,7 +63,7 @@ internal class CryptoForestCryptograph<T>
     /// <param name="fileSearch">The definition to search for the files to encrypt</param>
     /// <param name="entryGuid">The GUID of the new entry in the CryptoForest</param>
     /// <returns>Returns the generated Key and IV</returns>
-    internal async Task<KeyIV> EncryptFilesAsync(FileSearch fileSearch, Guid entryGuid, CancellationToken cancellationToken = default)
+    internal async Task<KeyIV> EncryptFilesAsync(FileSearch fileSearch, Guid entryGuid, CancellationToken cancellationToken)
     {
         using var storageStream = _storage.GetStream(entryGuid, asReadonly: false);
         var keyIV = _algorithm.GenerateKeyIV();
@@ -88,7 +88,7 @@ internal class CryptoForestCryptograph<T>
 
             // Encrypt directory structure recusively
             await EncryptDirectoryStructureAsync(directoryStructure, cryptoStream, cancellationToken: cancellationToken);
-            async Task EncryptDirectoryStructureAsync(SearchedDirectory directoryStructure, CryptoStream cryptoStream, string currentPath = "", CancellationToken cancellationToken = default)
+            async Task EncryptDirectoryStructureAsync(SearchedDirectory directoryStructure, CryptoStream cryptoStream, string currentPath = "", CancellationToken cancellationToken)
             {
                 var fullPath = fileSearch.SearchedDirectory + (currentPath != string.Empty && !fileSearch.SearchedDirectory.EndsWith('/') && !fileSearch.SearchedDirectory.EndsWith('\\') ? "/" : "") + currentPath;
                 foreach (var file in directoryStructure.ChildFiles)
@@ -111,7 +111,7 @@ internal class CryptoForestCryptograph<T>
     /// <param name="entryGuid">The GUID of the entry to decrypt</param>
     /// <param name="keyIV">The KeyIV used for the decryption</param>
     /// <returns>Returns the decrypted text</returns>
-    internal async Task<string> DecryptTextAsync(Guid entryGuid, KeyIV keyIV, CancellationToken cancellationToken = default)
+    internal async Task<string> DecryptTextAsync(Guid entryGuid, KeyIV keyIV, CancellationToken cancellationToken)
     {
         using var storageStream = _storage.GetStream(entryGuid, asReadonly: true);
         return await _algorithm.DecryptFromStreamAsync(keyIV, storageStream, DecryptText, cancellationToken);
@@ -131,7 +131,7 @@ internal class CryptoForestCryptograph<T>
     /// <param name="entryGuid">The GUID of the entry to decrypt</param>
     /// <param name="keyIV">The KeyIV used for the decryption</param>
     /// <returns>Returns the decrypted SearchedDirectory containing the decrypted data</returns>
-    internal async Task<SearchedDirectory> DecryptFilesAsync(Guid entryGuid, KeyIV keyIV, CancellationToken cancellationToken = default)
+    internal async Task<SearchedDirectory> DecryptFilesAsync(Guid entryGuid, KeyIV keyIV, CancellationToken cancellationToken)
     {
         using var storageStream = _storage.GetStream(entryGuid, asReadonly: true);
         return await _algorithm.DecryptFromStreamAsync(keyIV, storageStream, DecryptFiles, cancellationToken);
@@ -146,7 +146,7 @@ internal class CryptoForestCryptograph<T>
 
             return directoryStructure;
 
-            async Task DecryptDirectoryStructureAsync(SearchedDirectory directoryStructure, CryptoStream cryptoStream, string currentPath = "", CancellationToken cancellationToken = default)
+            async Task DecryptDirectoryStructureAsync(SearchedDirectory directoryStructure, CryptoStream cryptoStream, string currentPath = "", CancellationToken cancellationToken)
             {
                 foreach (var file in directoryStructure.ChildFiles)
                 {
@@ -172,7 +172,7 @@ internal class CryptoForestCryptograph<T>
     /// <param name="onFileExists">Defines what happens if a file already exists</param>
     /// <returns>Returns the decrypted SearchedDirectory without file data</returns>
     /// <exception cref="InvalidOperationException">Thrown when Throw is used in onFileExists and a file already exists</exception>
-    internal async Task<SearchedDirectory> DecryptFilesAsync(Guid entryGuid, KeyIV keyIV, string storageDirectory, OnFileExists onFileExists = OnFileExists.Throw, CancellationToken cancellationToken = default)
+    internal async Task<SearchedDirectory> DecryptFilesAsync(Guid entryGuid, KeyIV keyIV, string storageDirectory, OnFileExists onFileExists = OnFileExists.Throw, CancellationToken cancellationToken)
     {
         if (!Directory.Exists(storageDirectory))
         {
@@ -195,7 +195,7 @@ internal class CryptoForestCryptograph<T>
 
             return directoryStructure;
 
-            async Task DecryptDirectoryStructureAsync(SearchedDirectory directoryStructure, CryptoStream cryptoStream, string currentPath = "", CancellationToken cancellationToken = default)
+            async Task DecryptDirectoryStructureAsync(SearchedDirectory directoryStructure, CryptoStream cryptoStream, string currentPath = "", CancellationToken cancellationToken)
             {
                 var fullPath = storageDirectory + (currentPath != string.Empty && !storageDirectory.EndsWith('/') && !storageDirectory.EndsWith('\\') ? "/" : "") + currentPath;
                 foreach (var file in directoryStructure.ChildFiles)
@@ -215,7 +215,7 @@ internal class CryptoForestCryptograph<T>
         }
     }
 
-    private static async Task<SearchedDirectory> DecryptDirectoryStructureJsonAsync(CryptoStream cryptoStream, CancellationToken cancellationToken = default)
+    private static async Task<SearchedDirectory> DecryptDirectoryStructureJsonAsync(CryptoStream cryptoStream, CancellationToken cancellationToken)
     {
         var headerBytes = new byte[8];
         await cryptoStream.ReadAsync(headerBytes, cancellationToken);
