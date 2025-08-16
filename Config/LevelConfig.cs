@@ -119,6 +119,39 @@ public class LevelConfig : ItemConfig
     }
 
     /// <summary>
+    /// Searches a level based on a item GUID.
+    /// The search is conducted recursively so all sublevels will be searched.
+    /// </summary>
+    /// <param name="guid">The GUID of the item the level should be returned for</param>
+    /// <returns>Returns the level containing the item</returns>
+    /// <exception cref="ItemNotFoundException">Thrown if the item could not be found in any level</exception>
+    public LevelConfig GetLevelOfItem(Guid guid)
+    {
+        var item = Items.Values.SingleOrDefault(item => item.EntryGuid == guid);
+        if (item == null)
+        {
+            foreach (var sublevel in Sublevels.Values)
+            {
+                if (sublevel.HasItem(guid))
+                {
+                    if (sublevel.Items.Values.Any(i => i.EntryGuid == guid))
+                    {
+                        return sublevel;
+                    }
+                    else
+                    {
+                        return sublevel.GetLevelOfItem(guid);
+                    }
+                }
+            }
+
+            throw new ItemNotFoundException(guid);
+        }
+
+        return this;
+    }
+
+    /// <summary>
     /// Returns all items from the current level with their GUID as key and name as value
     /// </summary>
     /// <returns>Returns all items from the current level ordered by name</returns>

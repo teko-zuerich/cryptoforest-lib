@@ -27,4 +27,10 @@ public interface ICryptoForestStorage
     /// <param name="entryGuid">The entry GUID to check</param>
     /// <returns>Returns if the entry GUID already exists or not</returns>
     public bool EntryExists(Guid entryGuid);
+
+    /// <summary>
+    /// Removes an entry from the storage.
+    /// </summary>
+    /// <param name="entryGuid">The GUID of the entry to remove</param>
+    public Task RemoveEntryAsync(Guid entryGuid, CancellationToken cancellationToken = default);
 }
