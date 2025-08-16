@@ -12,20 +12,20 @@ internal class CryptoForest<T>
 {
     private readonly ICryptoForestStorage _storage;
     private readonly CryptoForestCryptograph<T> _cryptograph;
-    private readonly LevelConfig _mainLevel;
+    private readonly LevelConfig _baseLevel;
 
     public CryptoForest(ICryptoForestStorage storage, byte[] key, string filePath)
     {
         _storage = storage;
         _cryptograph = new CryptoForestCryptograph<T>(storage);
-        // TODO decrypt file with key and default IV and set mainLevel
+        // TODO decrypt file with key and default IV and set _baseLevel
     }
 
-    private CryptoForest(ICryptoForestStorage storage, LevelConfig mainLevel)
+    private CryptoForest(ICryptoForestStorage storage, LevelConfig baseLevel)
     {
         _storage = storage;
         _cryptograph = new CryptoForestCryptograph<T>(storage);
-        _mainLevel = mainLevel;
+        _baseLevel = baseLevel;
     }
 
     public static CryptoForest<T> CreateCryptoForest(ICryptoForestStorage storage)
@@ -36,8 +36,8 @@ internal class CryptoForest<T>
             SubLevels = []
         }));
 
-    public LevelConfig GetMainLevel()
-        => _mainLevel;
+    public LevelConfig GetBaseLevel()
+        => _baseLevel;
 
     public async Task<Guid> AddItemAsync(string text, string itemKey, Guid levelGuid, CancellationToken cancellationToken = default)
     {
@@ -66,12 +66,12 @@ internal class CryptoForest<T>
 
     private async Task<Guid> AddItemBaseAsync(string itemKey, Guid levelGuid, Func<Guid, Task<KeyIV>> performEncryption, ItemType itemType, CancellationToken cancellationToken)
     {
-        if (!_mainLevel.HasLevel(levelGuid))
+        if (!_baseLevel.HasLevel(levelGuid))
         {
             throw new LevelNotFoundException(levelGuid);
         }
 
-        var level = _mainLevel.GetLevel(levelGuid);
+        var level = _baseLevel.GetLevel(levelGuid);
         if (level.Items.ContainsKey(itemKey))
         {
             throw new ItemAlreadyExistsException(itemKey);
@@ -94,7 +94,7 @@ internal class CryptoForest<T>
 
     public async Task<bool> RemoveItemAsync(Guid itemGuid, CancellationToken cancellationToken = default)
     {
-        if (!_mainLevel.HasItem(itemGuid))
+        if (!_baseLevel.HasItem(itemGuid))
         {
             throw new ItemNotFoundException(itemGuid);
         }
@@ -107,7 +107,7 @@ internal class CryptoForest<T>
                 await _storage.RemoveEntryAsync(itemGuid, cancellationToken);
             }
 
-            var level = _mainLevel.GetLevelOfItem(itemGuid);
+            var level = _baseLevel.GetLevelOfItem(itemGuid);
             var item = level.Items.Single(i => i.Value.EntryGuid == itemGuid);
             level.Items.Remove(item.Key);
             await level.SaveConfigAsync(_cryptograph, cancellationToken);
@@ -173,12 +173,12 @@ internal class CryptoForest<T>
 
     private async Task<R> GetItemBaseAsync<R>(Guid itemGuid, Func<ItemConfig, Task<R>> performDecryption, ItemType expectedItemType, CancellationToken cancellationToken)
     {
-        if (!_mainLevel.HasItem(itemGuid))
+        if (!_baseLevel.HasItem(itemGuid))
         {
             throw new ItemNotFoundException(itemGuid);
         }
 
-        var item = _mainLevel.GetItem(itemGuid);
+        var item = _baseLevel.GetItem(itemGuid);
         if (item.ItemType != expectedItemType)
         {
             throw new InvalidOperationException($"The item with guid {itemGuid} is not an item of type {Enum.GetName(expectedItemType)}");
@@ -189,12 +189,58 @@ internal class CryptoForest<T>
 
     public async Task<Guid> AddLevelAsync(string levelKey, Guid parentLevelGuid, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        if (!_baseLevel.HasLevel(parentLevelGuid))
+        {
+            throw new LevelNotFoundException(parentLevelGuid);
+        }
+
+        var parentLevel = _baseLevel.GetLevel(parentLevelGuid);
+        if (parentLevel.Sublevels.Any(l => l.Key == levelKey))
+        {
+            throw new LevelAlreadyExistsException(levelKey);
+        }
+
+        try
+        {
+            var levelGuid = GenerateSecureGuid();
+            var level = new LevelConfig(levelGuid, new T().GenerateKeyIV(), parentLevel.KeyIV);
+            await parentLevel.SaveConfigAsync(_cryptograph, cancellationToken);
+            await level.SaveConfigAsync(_cryptograph, cancellationToken);
+
+            return levelGuid;
+        }
+        catch
+        {
+            return Guid.Empty;
+        }
     }
 
     public async Task<bool> RemoveLevelAsync(Guid levelGuid, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        if (!_baseLevel.HasLevel(levelGuid))
+        {
+            throw new LevelNotFoundException(levelGuid);
+        }
+
+        try
+        {
+            // We should check first if the entry exists before removing it as otherwise it would be impossible to remove an entry if the entry in the storage was removed already
+            if (_storage.EntryExists(levelGuid))
+            {
+                await _storage.RemoveEntryAsync(levelGuid, cancellationToken);
+            }
+
+            var parentLevel = _baseLevel.GetLevelOfLevel(levelGuid);
+            var level = parentLevel.Sublevels.Single(l => l.Value.EntryGuid == levelGuid);
+            parentLevel.Sublevels.Remove(level.Key);
+            await parentLevel.SaveConfigAsync(_cryptograph, cancellationToken);
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public void ExportConfig(IEnumerable<Guid> levelGuids, byte[] key, string filePath)

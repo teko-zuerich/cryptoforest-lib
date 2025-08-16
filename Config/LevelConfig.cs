@@ -56,6 +56,13 @@ public class LevelConfig : ItemConfig
         Sublevels = [];
     }
 
+    internal LevelConfig(Guid configGuid, KeyIV keyIV, KeyIV parentKeyIV) : base(configGuid, keyIV, ItemType.Level)
+    {
+        _previousKey = parentKeyIV;
+        Items = [];
+        Sublevels = [];
+    }
+
     // TODO LoadConfigAsync<T>
 
     internal async Task SaveConfigAsync<T>(CryptoForestCryptograph<T> cryptograph, CancellationToken cancellationToken = default)
@@ -149,6 +156,39 @@ public class LevelConfig : ItemConfig
         }
 
         return this;
+    }
+
+    /// <summary>
+    /// Searches a parent level based on a level GUID.
+    /// The search is conducted recursively so all sublevels will be searched.
+    /// </summary>
+    /// <param name="guid">The GUID of the child level the parent level should be returned for</param>
+    /// <returns>Returns the parent level of the level</returns>
+    /// <exception cref="LevelNotFoundException">Thrown if thee level could not be found in any level</exception>
+    public LevelConfig GetLevelOfLevel(Guid guid)
+    {
+        var level = Sublevels.Values.SingleOrDefault(level => level.EntryGuid == guid);
+        if (level == null)
+        {
+            foreach (var sublevel in Sublevels.Values)
+            {
+                if (sublevel.HasLevel(guid))
+                {
+                    if (sublevel.Sublevels.Values.Any(l => l.EntryGuid == guid))
+                    {
+                        return sublevel;
+                    }
+                    else
+                    {
+                        return sublevel.GetLevelOfLevel(guid);
+                    }
+                }
+            }
+
+            throw new LevelNotFoundException(guid);
+        }
+
+        return level;
     }
 
     /// <summary>
