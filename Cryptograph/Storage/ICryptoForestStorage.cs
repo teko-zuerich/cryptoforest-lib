@@ -19,4 +19,12 @@ public interface ICryptoForestStorage
     /// </summary>
     /// <param name="storageStream">The current storage stream</param>
     public Task FinalizeAsync(Stream storageStream, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Called to determine if an entry already exists in the storage before creating it.
+    /// When it already exists a new GUID is generated until a GUID that doesn't exist yet is found.
+    /// </summary>
+    /// <param name="entryGuid">The entry GUID to check</param>
+    /// <returns>Returns if the entry GUID already exists or not</returns>
+    public bool EntryExists(Guid entryGuid);
 }

@@ -1,4 +1,6 @@
-﻿using CryptoForestLibrary.Exceptions;
+﻿using CryptoForestLibrary.Cryptograph;
+using CryptoForestLibrary.Cryptograph.Algorithm;
+using CryptoForestLibrary.Exceptions;
 
 namespace CryptoForestLibrary.Config;
 
@@ -56,7 +58,11 @@ public class LevelConfig : ItemConfig
 
     // TODO LoadConfigAsync<T>
 
-    // TODO SaveConfigAsync<T>
+    internal async Task SaveConfigAsync<T>(CryptoForestCryptograph<T> cryptograph, CancellationToken cancellationToken = default)
+        where T : ICryptoForestAlgorithm, new()
+    {
+        throw new NotImplementedException();
+    }
 
     /// <summary>
     /// Returns all direct sublevels of the current level with their GUID as key and name as value
@@ -178,7 +184,7 @@ public class LevelConfig : ItemConfig
         var foundLevels = new Dictionary<string, LevelConfig>();
         SearchItemsInLevel(this, searchString);
 
-        // Orders the dictionarys by name
+        // Orders the dictionaries by name
         // https://stackoverflow.com/questions/289/how-do-you-sort-a-dictionary-by-value
         var orderedLevels = from level in foundLevels
                             orderby level.Value ascending

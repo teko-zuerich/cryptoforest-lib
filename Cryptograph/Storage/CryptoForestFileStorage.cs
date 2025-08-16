@@ -47,7 +47,13 @@ public class CryptoForestFileStorage : ICryptoForestStorage
     }
 
     public Task FinalizeAsync(Stream storageStream, CancellationToken cancellationToken = default)
-    {
-        return Task.CompletedTask;
-    }
+        => Task.CompletedTask;
+
+    /// <summary>
+    /// Checks if a file with this GUID already exists.
+    /// </summary>
+    /// <param name="entryGuid">The entry GUID to check</param>
+    /// <returns>Returns if the GUID already exists</returns>
+    public bool EntryExists(Guid entryGuid)
+        => File.Exists($"{_cryptoForestDirectory}/{entryGuid}");
 }
