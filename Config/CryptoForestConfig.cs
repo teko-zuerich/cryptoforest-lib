@@ -9,5 +9,5 @@ internal class CryptoForestConfig
 
     internal required KeyIV KeyIV { get; init; }
 
-    internal required IEnumerable<CryptoForestConfig> SubLevels { get; init; }
+    internal required List<CryptoForestConfig> Sublevels { get; init; }
 }

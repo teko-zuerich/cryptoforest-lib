@@ -33,7 +33,7 @@ internal class CryptoForest<T>
         {
             ConfigGuid = GenerateSecureGuid(storage),
             KeyIV = new T().GenerateKeyIV(),
-            SubLevels = []
+            Sublevels = []
         }));
 
     public LevelConfig GetBaseLevel()
@@ -245,7 +245,35 @@ internal class CryptoForest<T>
 
     public void ExportConfig(IEnumerable<Guid> levelGuids, byte[] key, string filePath)
     {
-        throw new NotImplementedException();
+        var exportConfig = new CryptoForestConfig()
+        {
+            ConfigGuid = _baseLevel.EntryGuid,
+            KeyIV = _baseLevel.KeyIV,
+            Sublevels = []
+        };
+        AddToStructure(_baseLevel, exportConfig);
+
+        // TODO encrypt export config to filepath with key
+
+        // Recursively goes through the currently loaded level structure and creates the structure for the levels included in levelGuids
+        void AddToStructure(LevelConfig currentLevel, CryptoForestConfig currentExportLevel)
+        {
+            foreach (var sublevel in currentLevel.Sublevels.Values)
+            {
+                // If the level GUID is included in the levelGuids list it will be added to the structure and AddToStructure will be called to add any sublevels also contained in levelGuids
+                if (levelGuids.Contains(sublevel.EntryGuid))
+                {
+                    var newExportLevel = new CryptoForestConfig
+                    {
+                        ConfigGuid = sublevel.EntryGuid,
+                        KeyIV = sublevel.KeyIV,
+                        Sublevels = []
+                    };
+                    currentExportLevel.Sublevels.Add(newExportLevel);
+                    AddToStructure(sublevel, newExportLevel);
+                }
+            }
+        }
     }
 
     private Guid GenerateSecureGuid()
