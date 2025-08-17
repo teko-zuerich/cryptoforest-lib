@@ -55,9 +55,10 @@ internal class CryptoForestCryptograph<T>
     /// </summary>
     /// <param name="text">The text to encrypt</param>
     /// <param name="entryGuid">The GUID of the new entry in the CryptoForest</param>
+    /// <param name="usedKeyIV">The key iv used for the encryption of a level config</param>
     /// <returns>Returns the generated Key and IV</returns>
     /// <exception cref="ArgumentException">Thrown when the text is empty or null</exception>
-    internal async Task<KeyIV> EncryptTextAsync(string text, Guid entryGuid, CancellationToken cancellationToken)
+    internal async Task<KeyIV> EncryptTextAsync(string text, Guid entryGuid, CancellationToken cancellationToken, KeyIV? usedKeyIV = null)
     {
         if (string.IsNullOrEmpty(text))
         {
@@ -65,7 +66,7 @@ internal class CryptoForestCryptograph<T>
         }
 
         using var storageStream = _storage.GetStream(entryGuid, asReadonly: false);
-        var keyIV = _algorithm.GenerateKeyIV();
+        var keyIV = usedKeyIV ?? _algorithm.GenerateKeyIV();
         await _algorithm.EncryptToStreamAsync(keyIV, storageStream, EncryptText, cancellationToken);
         await _storage.FinalizeAsync(storageStream, cancellationToken);
 

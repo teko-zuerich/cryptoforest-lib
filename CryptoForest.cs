@@ -36,6 +36,7 @@ public class CryptoForest<T>
         {
             var config = _cryptograph.DecryptConfigAsync(key, filePath, cancellationToken: default).Result;
             _baseLevel = new LevelConfig(config);
+            _baseLevel.LoadConfigAsync(_cryptograph, cancellationToken: default).GetAwaiter().GetResult();
         }
         catch
         {
@@ -143,7 +144,7 @@ public class CryptoForest<T>
             var itemGuid = GenerateSecureGuid();
             var keyIV = await performEncryption(itemGuid, cancellationToken);
             level.Items.Add(itemKey, new ItemConfig(itemGuid, keyIV, itemType));
-            await level.SaveConfigAsync(_cryptograph, cancellationToken);
+            await level.SaveConfigAsync(_cryptograph, _storage, cancellationToken);
 
             return itemGuid;
         }
@@ -177,7 +178,7 @@ public class CryptoForest<T>
             var level = _baseLevel.GetLevelOfItem(itemGuid);
             var item = level.Items.Single(i => i.Value.EntryGuid == itemGuid);
             level.Items.Remove(item.Key);
-            await level.SaveConfigAsync(_cryptograph, cancellationToken);
+            await level.SaveConfigAsync(_cryptograph, _storage, cancellationToken);
 
             return true;
         }
@@ -310,8 +311,8 @@ public class CryptoForest<T>
         {
             var levelGuid = GenerateSecureGuid();
             var level = new LevelConfig(levelGuid, new T().GenerateKeyIV(), parentLevel.KeyIV);
-            await parentLevel.SaveConfigAsync(_cryptograph, cancellationToken);
-            await level.SaveConfigAsync(_cryptograph, cancellationToken);
+            await parentLevel.SaveConfigAsync(_cryptograph, _storage, cancellationToken);
+            await level.SaveConfigAsync(_cryptograph, _storage, cancellationToken);
 
             return levelGuid;
         }
@@ -345,7 +346,7 @@ public class CryptoForest<T>
             var parentLevel = _baseLevel.GetLevelOfLevel(levelGuid);
             var level = parentLevel.Sublevels.Single(l => l.Value.EntryGuid == levelGuid);
             parentLevel.Sublevels.Remove(level.Key);
-            await parentLevel.SaveConfigAsync(_cryptograph, cancellationToken);
+            await parentLevel.SaveConfigAsync(_cryptograph, _storage, cancellationToken);
 
             return true;
         }
