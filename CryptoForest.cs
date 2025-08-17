@@ -25,11 +25,22 @@ public class CryptoForest<T>
     /// <param name="storage">The storage to used in the CryptoForest</param>
     /// <param name="key">The key used to decrypt the file containing the encrypted config</param>
     /// <param name="filePath">The path to the encrypted file containing the config</param>
+    /// <exception cref="CryptoForestConfigException">Thrown when the config could not be decrypted</exception>
     public CryptoForest(ICryptoForestStorage storage, byte[] key, string filePath)
     {
         _storage = storage;
         _cryptograph = new CryptoForestCryptograph<T>(storage);
-        // TODO decrypt file with key and default IV and set _baseLevel
+
+        // Decrypt the config and load the structure
+        try
+        {
+            var config = _cryptograph.DecryptConfigAsync(key, filePath, cancellationToken: default).Result;
+            _baseLevel = new LevelConfig(config);
+        }
+        catch
+        {
+            throw new CryptoForestConfigException(encrypting: false);
+        }
     }
 
     /// <summary>
@@ -350,7 +361,8 @@ public class CryptoForest<T>
     /// <param name="levelGuids">The GUIDs of the levels to export in any order</param>
     /// <param name="key">The key used when the config gets encrypted</param>
     /// <param name="filePath">The file path to encrypt the exported config to</param>
-    public void ExportConfig(IEnumerable<Guid> levelGuids, byte[] key, string filePath)
+    /// <exception cref="CryptoForestConfigException">Thrown when the config could not be encrypted</exception>
+    public async Task ExportConfigAsync(IEnumerable<Guid> levelGuids, byte[] key, string filePath, CancellationToken cancellationToken = default)
     {
         // Create the export config for the base level
         var exportConfig = new CryptoForestConfig()
@@ -361,7 +373,15 @@ public class CryptoForest<T>
         };
         CreateStructure(_baseLevel, exportConfig);
 
-        // TODO encrypt export config to filepath with key
+        // Encrypt the config to the file system
+        try
+        {
+            await _cryptograph.EncryptConfigAsync(exportConfig, key, filePath, cancellationToken);
+        }
+        catch
+        {
+            throw new CryptoForestConfigException(encrypting: true);
+        }
 
         // Recursively goes through the currently loaded level structure and creates the structure for the levels included in levelGuids
         void CreateStructure(LevelConfig currentLevel, CryptoForestConfig currentExportLevel)

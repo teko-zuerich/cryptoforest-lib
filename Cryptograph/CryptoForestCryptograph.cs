@@ -30,6 +30,27 @@ internal class CryptoForestCryptograph<T>
     }
 
     /// <summary>
+    /// Encrypts and exports a config.
+    /// </summary>
+    /// <param name="config">The config to export</param>
+    /// <param name="key">The key used to export the config</param>
+    /// <param name="filePath">The file path to export the config to</param>
+    internal async Task EncryptConfigAsync(CryptoForestConfig config, byte[] key, string filePath, CancellationToken cancellationToken)
+    {
+        using var storageStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+        var keyIV = new KeyIV(key, iv: new byte[key.Length]); // TODO check if byte array is filled with 0s
+        await _algorithm.EncryptToStreamAsync(keyIV, storageStream, EncryptConfig, cancellationToken);
+        await _storage.FinalizeAsync(storageStream, cancellationToken);
+
+        async Task EncryptConfig(CryptoStream cryptoStream, CancellationToken cancellationToken)
+        {
+            var configJson = JsonSerializer.Serialize(config);
+            var configData = Encoding.ASCII.GetBytes(configJson);
+            await cryptoStream.WriteAsync(configData, cancellationToken);
+        }
+    }
+
+    /// <summary>
     /// Encrypts the text into the CryptoForest storage with the defined algorithm
     /// </summary>
     /// <param name="text">The text to encrypt</param>
@@ -88,7 +109,7 @@ internal class CryptoForestCryptograph<T>
 
             // Encrypt directory structure recusively
             await EncryptDirectoryStructureAsync(directoryStructure, cryptoStream, cancellationToken: cancellationToken);
-            async Task EncryptDirectoryStructureAsync(SearchedDirectory directoryStructure, CryptoStream cryptoStream, string currentPath = "", CancellationToken cancellationToken)
+            async Task EncryptDirectoryStructureAsync(SearchedDirectory directoryStructure, CryptoStream cryptoStream, CancellationToken cancellationToken, string currentPath = "")
             {
                 var fullPath = fileSearch.SearchedDirectory + (currentPath != string.Empty && !fileSearch.SearchedDirectory.EndsWith('/') && !fileSearch.SearchedDirectory.EndsWith('\\') ? "/" : "") + currentPath;
                 foreach (var file in directoryStructure.ChildFiles)
@@ -99,9 +120,31 @@ internal class CryptoForestCryptograph<T>
 
                 foreach (var directory in directoryStructure.ChildDirectories)
                 {
-                    await EncryptDirectoryStructureAsync(directory, cryptoStream, currentPath + (currentPath != string.Empty ? "/" : "") + directory.DirectoryName, cancellationToken);
+                    await EncryptDirectoryStructureAsync(directory, cryptoStream, cancellationToken, currentPath + (currentPath != string.Empty ? "/" : "") + directory.DirectoryName);
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// Decrypts a config.
+    /// </summary>
+    /// <param name="key">The key used in the decryption</param>
+    /// <param name="filePath">The path to the file to decrypt</param>
+    /// <returns>Returns the decrypted CryptoForestConfig</returns>
+    internal async Task<CryptoForestConfig> DecryptConfigAsync(byte[] key, string filePath, CancellationToken cancellationToken)
+    {
+        using var storageStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+        var keyIV = new KeyIV(key, iv: new byte[key.Length]); // TODO check if byte array is filled with 0s
+        return await _algorithm.DecryptFromStreamAsync(keyIV, storageStream, DecryptConfig, cancellationToken);
+
+        async Task<CryptoForestConfig> DecryptConfig(CryptoStream cryptoStream, CancellationToken cancellationToken)
+        {
+            using var memoryStream = new MemoryStream();
+            await cryptoStream.CopyToAsync(memoryStream, cancellationToken);
+            //await memoryStream.FlushAsync(cancellationToken); // TODO check if needed
+            var configJson = Encoding.ASCII.GetString(memoryStream.ToArray());
+            return JsonSerializer.Deserialize<CryptoForestConfig>(configJson)!;
         }
     }
 
@@ -146,7 +189,7 @@ internal class CryptoForestCryptograph<T>
 
             return directoryStructure;
 
-            async Task DecryptDirectoryStructureAsync(SearchedDirectory directoryStructure, CryptoStream cryptoStream, string currentPath = "", CancellationToken cancellationToken)
+            async Task DecryptDirectoryStructureAsync(SearchedDirectory directoryStructure, CryptoStream cryptoStream, CancellationToken cancellationToken, string currentPath = "")
             {
                 foreach (var file in directoryStructure.ChildFiles)
                 {
@@ -157,7 +200,7 @@ internal class CryptoForestCryptograph<T>
 
                 foreach (var directory in directoryStructure.ChildDirectories)
                 {
-                    await DecryptDirectoryStructureAsync(directory, cryptoStream, currentPath + (currentPath != string.Empty ? "/" : "") + directory.DirectoryName, cancellationToken);
+                    await DecryptDirectoryStructureAsync(directory, cryptoStream, cancellationToken, currentPath + (currentPath != string.Empty ? "/" : "") + directory.DirectoryName);
                 }
             }
         }
@@ -172,7 +215,7 @@ internal class CryptoForestCryptograph<T>
     /// <param name="onFileExists">Defines what happens if a file already exists</param>
     /// <returns>Returns the decrypted SearchedDirectory without file data</returns>
     /// <exception cref="InvalidOperationException">Thrown when Throw is used in onFileExists and a file already exists</exception>
-    internal async Task<SearchedDirectory> DecryptFilesAsync(Guid entryGuid, KeyIV keyIV, string storageDirectory, OnFileExists onFileExists = OnFileExists.Throw, CancellationToken cancellationToken)
+    internal async Task<SearchedDirectory> DecryptFilesAsync(Guid entryGuid, KeyIV keyIV, string storageDirectory, OnFileExists onFileExists, CancellationToken cancellationToken)
     {
         if (!Directory.Exists(storageDirectory))
         {
@@ -195,7 +238,7 @@ internal class CryptoForestCryptograph<T>
 
             return directoryStructure;
 
-            async Task DecryptDirectoryStructureAsync(SearchedDirectory directoryStructure, CryptoStream cryptoStream, string currentPath = "", CancellationToken cancellationToken)
+            async Task DecryptDirectoryStructureAsync(SearchedDirectory directoryStructure, CryptoStream cryptoStream, CancellationToken cancellationToken, string currentPath = "")
             {
                 var fullPath = storageDirectory + (currentPath != string.Empty && !storageDirectory.EndsWith('/') && !storageDirectory.EndsWith('\\') ? "/" : "") + currentPath;
                 foreach (var file in directoryStructure.ChildFiles)
@@ -209,7 +252,7 @@ internal class CryptoForestCryptograph<T>
 
                 foreach (var directory in directoryStructure.ChildDirectories)
                 {
-                    await DecryptDirectoryStructureAsync(directory, cryptoStream, currentPath + (currentPath != string.Empty ? "/" : "") + directory.DirectoryName, cancellationToken);
+                    await DecryptDirectoryStructureAsync(directory, cryptoStream, cancellationToken, currentPath + (currentPath != string.Empty ? "/" : "") + directory.DirectoryName);
                 }
             }
         }
