@@ -291,6 +291,35 @@ public class CryptoForest<T>
     }
 
     /// <summary>
+    /// Moves an item from the current level to another one.
+    /// </summary>
+    /// <param name="itemGuid">The GUID of the item to be moved</param>
+    /// <param name="newLevelGuid">The GUID of the level the item should be moved to</param>
+    /// <exception cref="ItemNotFoundException">Thrown when the item with the itemGuid could not be found in the structure</exception>
+    /// <exception cref="LevelNotFoundException">Thrown when the level with the newLevelGuid could not be found in the structure</exception>
+    public async Task MoveItemAsync(Guid itemGuid, Guid newLevelGuid, CancellationToken cancellationToken = default)
+    {
+        if (_baseLevel.HasItem(itemGuid))
+        {
+            throw new ItemNotFoundException(itemGuid);
+        }
+        else if (!_baseLevel.HasLevel(newLevelGuid))
+        {
+            throw new LevelNotFoundException(newLevelGuid);
+        }
+
+        var item = _baseLevel.GetItem(itemGuid);
+        var currentLevel = _baseLevel.GetLevelOfItem(itemGuid);
+        var itemKey = currentLevel.Items.Single(i => i.Value.EntryGuid == itemGuid).Key;
+        currentLevel.Items.Remove(itemKey);
+        var newLevel = _baseLevel.GetLevel(newLevelGuid);
+        newLevel.Items.Add(itemKey, item);
+        // newLevel should be saved first in case there is an issue saving the newLevel as the item would then be lost as it was already removed from currentLevel
+        await newLevel.SaveConfigAsync(_cryptograph, _storage, cancellationToken);
+        await currentLevel.SaveConfigAsync(_cryptograph, _storage, cancellationToken);
+    }
+
+    /// <summary>
     /// Adds a level to the CryptoForest.
     /// </summary>
     /// <param name="levelKey">The key/name of the new level</param>
