@@ -458,3 +458,12 @@ public class CryptoForest<T>
         return guid;
     }
 }
+
+/// <summary>
+/// Used for creating and managing a CryptoForest using the AES256 algorithm
+/// </summary>
+public class AesCryptForest : CryptoForest<CryptoForestAesAlgorithm>
+{
+    public AesCryptForest(ICryptoForestStorage storage, byte[] key, string filePath)
+        : base(storage, key, filePath) { }
+}

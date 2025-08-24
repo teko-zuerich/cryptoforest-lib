@@ -8,7 +8,7 @@ The library was designed to be flexible and adaptable for various use cases. Thi
 To use it first a new CryptoForest needs to be created. To create a CryptoForest a storage is needed. Currently the only storage that is implemented in the library is a storage on the file system and the only algorithm implemented is AES256. Here is an example on how to create a new CryptoForest:
 ```c#
 var storage = new CryptoForestFileStorage(directoryPath);
-var cryptoForest = CryptoForest<CryptoForestAesAlgorithm>.CreateCryptoForest(storage);
+var cryptoForest = AesCryptForest.CreateCryptoForest(storage);
 ```
 The `cryptoForest` instance then can be used to encrypt various types of data into levels. A new CryptoForest only has the base level. Each level and data has it's own unique GUID. To decrypt data the GUID of the data is needed. To find out which GUID is the correct one for a level or data the level config that can be retrieved with the `GetBaseLevel` method. The level config then has various methods to search for levels and data. Most methods in the level config are recursive and search all sublevels as well. To identify data and levels each data and level has a name set when encrypting the data.
 
@@ -17,7 +17,7 @@ When adding a directory structure it first needs to be defined what should be in
 To be able to open the CryptoForest again a config needs to be exported. This can be done with the `ExportConfigAsync` method. This method needs the GUIDs of the levels to be exported and the key used to encrypt it. Once the config has been exported it's pretty easy to just use the encrypted file that was just created to open the CryptoForest again. Here is a sample on how to open it again:
 ```c#
 var storage = new CryptoForestFileStorage(directoryPath);
-var cryptoForest = new CryptoForest<CryptoForestAesAlgorithm>(storage, key, configFilePath);
+var cryptoForest = new AesCryptForest(storage, key, configFilePath);
 ```
 
 All of the methods and their expected parameters have been documented in the code. This documentation can be used to understand better what is expected.
