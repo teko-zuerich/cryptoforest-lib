@@ -1,4 +1,7 @@
 # Cryptograph Forest
+![2025_007_CryptoForest_Logo](https://github.com/user-attachments/assets/1688ccd6-e20e-4c0d-b518-2d1edd3a9e07)
+
+
 ## What is it?
 The Cryptograph Forest library (or short CryptoForest) is a small library that simplifies securely encrypting data. The data can be encrypted in different levels. The structure of the levels is a tree structure which is also where the name comes from as you can create multiple of such trees. The tree structure was choosen as it allows for a level structure of various complexities. The data that can be encrypted to these levels can be simple text, files or a whole directory structure. Each data has an own generated key and iv and is stored as one file even if multiple files or directories are included.
 
