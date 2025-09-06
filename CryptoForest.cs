@@ -1,4 +1,4 @@
-﻿using CryptoForestLibrary.Config;
+using CryptoForestLibrary.Config;
 using CryptoForestLibrary.Cryptograph;
 using CryptoForestLibrary.Cryptograph.Algorithm;
 using CryptoForestLibrary.Cryptograph.Storage;
@@ -462,8 +462,8 @@ public class CryptoForest<T>
 /// <summary>
 /// Used for creating and managing a CryptoForest using the AES256 algorithm
 /// </summary>
-public class AesCryptForest : CryptoForest<CryptoForestAesAlgorithm>
+public class AesCryptoForest : CryptoForest<CryptoForestAesAlgorithm>
 {
-    public AesCryptForest(ICryptoForestStorage storage, byte[] key, string filePath)
+    public AesCryptoForest(ICryptoForestStorage storage, byte[] key, string filePath)
         : base(storage, key, filePath) { }
 }
