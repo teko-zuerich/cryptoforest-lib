@@ -49,7 +49,7 @@ public class CryptoForest<T>
     /// </summary>
     /// <param name="storage">The storage used in the new CryptoForest</param>
     /// <param name="baseLevel">The base level of the new CryptoForest</param>
-    private CryptoForest(ICryptoForestStorage storage, LevelConfig baseLevel)
+    protected CryptoForest(ICryptoForestStorage storage, LevelConfig baseLevel)
     {
         _storage = storage;
         _cryptograph = new CryptoForestCryptograph<T>(storage);
@@ -447,7 +447,7 @@ public class CryptoForest<T>
     /// </summary>
     /// <param name="storage">The storage used to check the availability of the GUID</param>
     /// <returns>Returns the cryptographicaly secure GUID</returns>
-    private static Guid GenerateSecureGuid(ICryptoForestStorage storage)
+    protected static Guid GenerateSecureGuid(ICryptoForestStorage storage)
     {
         var guid = new Guid(RandomNumberGenerator.GetBytes(16));
         while (storage.EntryExists(guid))
@@ -464,6 +464,29 @@ public class CryptoForest<T>
 /// </summary>
 public class AesCryptoForest : CryptoForest<CryptoForestAesAlgorithm>
 {
+    /// <summary>
+    /// Opens an AesCryptoForest using the provided storage and loads the structure from the encrypted file with the key.
+    /// </summary>
+    /// <param name="storage">The storage to used in the AesCryptoForest</param>
+    /// <param name="key">The key used to decrypt the file containing the encrypted config</param>
+    /// <param name="filePath">The path to the encrypted file containing the config</param>
+    /// <exception cref="CryptoForestConfigException">Thrown when the config could not be decrypted</exception>
     public AesCryptoForest(ICryptoForestStorage storage, byte[] key, string filePath)
         : base(storage, key, filePath) { }
+
+    private AesCryptoForest(ICryptoForestStorage storage, LevelConfig baseLevel)
+        : base(storage, baseLevel) { }
+
+    /// <summary>
+    /// Creates and opens a new AesCryptoForest using the storage provided.
+    /// </summary>
+    /// <param name="storage">The storage used in the new AesCryptoForest</param>
+    /// <returns>An instance of the AesCryptoForest with the provided storage</returns>
+    public static new AesCryptoForest CreateCryptoForest(ICryptoForestStorage storage)
+        => new AesCryptoForest(storage, new LevelConfig(new CryptoForestConfig
+        {
+            ConfigGuid = GenerateSecureGuid(storage),
+            KeyIV = new CryptoForestAesAlgorithm().GenerateKeyIV(),
+            Sublevels = []
+        }));
 }
