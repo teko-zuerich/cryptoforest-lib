@@ -1,4 +1,4 @@
-﻿using CryptoForestLibrary.Cryptograph;
+using CryptoForestLibrary.Cryptograph;
 using CryptoForestLibrary.Cryptograph.Algorithm;
 using CryptoForestLibrary.Cryptograph.Storage;
 using CryptoForestLibrary.Exceptions;
@@ -141,21 +141,21 @@ public class LevelConfig : ItemConfig
     }
 
     /// <summary>
-    /// Returns all direct sublevels of the current level with their GUID as key and name as value
+    /// Returns all direct sublevels of the current level with their name as key and ItemConfig as value
     /// </summary>
     /// <returns>Returns all direct sublevels ordered by name</returns>
-    public Dictionary<Guid, string> GetLevels()
+    public Dictionary<string, ItemConfig> GetLevels()
     {
-        var levels = new Dictionary<Guid, string>();
+        var levels = new Dictionary<string, ItemConfig>();
         foreach (var sublevel in Sublevels)
         {
-            levels.Add(sublevel.Value.EntryGuid, sublevel.Key);
+            levels.Add(sublevel.Key, sublevel.Value);
         }
 
         // Orders the dictionary by level name
         // https://stackoverflow.com/questions/289/how-do-you-sort-a-dictionary-by-value
         var orderedLevels = from level in levels
-                            orderby level.Value ascending
+                            orderby level.Key ascending
                             select level;
         return orderedLevels.ToDictionary();
     }
@@ -261,21 +261,21 @@ public class LevelConfig : ItemConfig
     }
 
     /// <summary>
-    /// Returns all items from the current level with their GUID as key and name as value
+    /// Returns all items from the current level with their name as key and ItemConfig as value
     /// </summary>
     /// <returns>Returns all items from the current level ordered by name</returns>
-    public Dictionary<Guid, string> GetItems()
+    public Dictionary<string, ItemConfig> GetItems()
     {
-        var items = new Dictionary<Guid, string>();
+        var items = new Dictionary<string, ItemConfig>();
         foreach (var item in Items)
         {
-            items.Add(item.Value.EntryGuid, item.Key);
+            items.Add(item.Key, item.Value);
         }
 
         // Orders the dictionary by item name
         // https://stackoverflow.com/questions/289/how-do-you-sort-a-dictionary-by-value
         var orderedItems = from item in items
-                           orderby item.Value ascending
+                           orderby item.Key ascending
                            select item;
         return orderedItems.ToDictionary();
     }
