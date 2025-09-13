@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 
 namespace CryptoForestLibrary.Extensions;
 internal static class CryptoStreamExtensions
@@ -14,7 +14,7 @@ internal static class CryptoStreamExtensions
         var currentlyRead = await readStream.ReadAsync(currentFileData, cancellationToken);
         while (currentlyRead > 0)
         {
-            await cryptoStream.WriteAsync(currentFileData, cancellationToken);
+            await cryptoStream.WriteAsync(currentFileData, 0, currentlyRead, cancellationToken);
             currentlyRead = await readStream.ReadAsync(currentFileData, cancellationToken);
         }
     }
