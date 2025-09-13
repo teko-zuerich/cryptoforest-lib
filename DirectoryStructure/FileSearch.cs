@@ -1,4 +1,4 @@
-﻿namespace CryptoForestLibrary.DirectoryStructure;
+namespace CryptoForestLibrary.DirectoryStructure;
 
 /// <summary>
 /// FileSearch can be used to get the directory structure with defined search parameters to specify further what should be included or excluded
@@ -24,18 +24,28 @@ public class FileSearch
     }
 
     /// <summary>
+    /// Creates a FileSearch which will search for specific files in the searchedPaths
+    /// </summary>
+    /// <param name="searchedPaths">The paths of the specific file paths to be included in a flattened structure</param>
+    /// <param name="searchedDirectory">The base path if some searchedPaths are relative</param>
+    public FileSearch(IEnumerable<string> searchedPaths, string searchedDirectory = "")
+    {
+        SearchedDirectory = searchedDirectory;
+        SearchedPaths = searchedPaths;
+        SpecificFiles = true;
+    }
+
+    /// <summary>
     /// Creates a FileSearch with a dynamic configuration on what will be searched
     /// </summary>
     /// <param name="searchedDirectory">The directory to search</param>
     /// <param name="searchedPaths">The paths to include or exclude</param>
     /// <param name="includePaths">Specifies if the paths should be used to include or to exclude certain files and directories if the searched path is part of the path</param>
-    /// <param name="specificFiles">Specifies if the files in the searchedPath should be treated as specific files to include in a flattened structure</param>
-    public FileSearch(string searchedDirectory, IEnumerable<string> searchedPaths, bool includePaths, bool specificFiles)
+    public FileSearch(string searchedDirectory, IEnumerable<string> searchedPaths, bool includePaths)
     {
         SearchedDirectory = searchedDirectory;
         SearchedPaths = searchedPaths;
         IncludePaths = includePaths;
-        SpecificFiles = specificFiles;
     }
 
     /// <summary>
@@ -67,14 +77,14 @@ public class FileSearch
             foreach (var file in files)
             {
                 var fileInfo = new FileInfo(file);
-                searchedDirectory.ChildFiles.Add(new SearchedFile(fileInfo.Name, fileInfo.Length));
+                searchedDirectory.ChildFiles.Add(new SearchedFile(fileInfo.Name, fileInfo.Length, file));
             }
 
             foreach (var directory in directories)
             {
                 var searchedSubDirectory = new SearchedDirectory(new DirectoryInfo(directory).Name);
                 searchedDirectory.ChildDirectories.Add(searchedSubDirectory);
-                GetStructure(searchedDirectory, currentPath + (currentPath != string.Empty ? "/" : "") + searchedSubDirectory.DirectoryName);
+                GetStructure(searchedSubDirectory, currentPath + (currentPath != string.Empty ? "/" : "") + searchedSubDirectory.DirectoryName);
             }
         }
         else
@@ -85,7 +95,7 @@ public class FileSearch
                 if (existingPath != null)
                 {
                     var fileInfo = new FileInfo(existingPath);
-                    searchedDirectory.ChildFiles.Add(new SearchedFile(fileInfo.Name, fileInfo.Length));
+                    searchedDirectory.ChildFiles.Add(new SearchedFile(fileInfo.Name, fileInfo.Length, existingPath));
                 }
             }
         }

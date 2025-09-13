@@ -1,4 +1,4 @@
-﻿using CryptoForestLibrary.Config;
+using CryptoForestLibrary.Config;
 using CryptoForestLibrary.Cryptograph.Algorithm;
 using CryptoForestLibrary.Cryptograph.Storage;
 using CryptoForestLibrary.DirectoryStructure;
@@ -38,7 +38,7 @@ internal class CryptoForestCryptograph<T>
     internal async Task EncryptConfigAsync(CryptoForestConfig config, byte[] key, string filePath, CancellationToken cancellationToken)
     {
         using var storageStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
-        var keyIV = new KeyIV(key, iv: new byte[key.Length]); // TODO check if byte array is filled with 0s
+        var keyIV = new KeyIV(key, iv: new byte[16]); // TODO check if byte array is filled with 0s
         await _algorithm.EncryptToStreamAsync(keyIV, storageStream, EncryptConfig, cancellationToken);
         await _storage.FinalizeAsync(storageStream, cancellationToken);
 
@@ -110,18 +110,17 @@ internal class CryptoForestCryptograph<T>
 
             // Encrypt directory structure recusively
             await EncryptDirectoryStructureAsync(directoryStructure, cryptoStream, cancellationToken: cancellationToken);
-            async Task EncryptDirectoryStructureAsync(SearchedDirectory directoryStructure, CryptoStream cryptoStream, CancellationToken cancellationToken, string currentPath = "")
+            async Task EncryptDirectoryStructureAsync(SearchedDirectory directoryStructure, CryptoStream cryptoStream, CancellationToken cancellationToken)
             {
-                var fullPath = fileSearch.SearchedDirectory + (currentPath != string.Empty && !fileSearch.SearchedDirectory.EndsWith('/') && !fileSearch.SearchedDirectory.EndsWith('\\') ? "/" : "") + currentPath;
                 foreach (var file in directoryStructure.ChildFiles)
                 {
-                    using var readStream = new FileStream($"{fullPath}/{file.FileName}", FileMode.Open, FileAccess.Read);
+                    using var readStream = new FileStream(file.Path, FileMode.Open, FileAccess.Read);
                     await cryptoStream.EncryptFileAsync(readStream, cancellationToken);
                 }
 
                 foreach (var directory in directoryStructure.ChildDirectories)
                 {
-                    await EncryptDirectoryStructureAsync(directory, cryptoStream, cancellationToken, currentPath + (currentPath != string.Empty ? "/" : "") + directory.DirectoryName);
+                    await EncryptDirectoryStructureAsync(directory, cryptoStream, cancellationToken);
                 }
             }
         }
@@ -136,7 +135,7 @@ internal class CryptoForestCryptograph<T>
     internal async Task<CryptoForestConfig> DecryptConfigAsync(byte[] key, string filePath, CancellationToken cancellationToken)
     {
         using var storageStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-        var keyIV = new KeyIV(key, iv: new byte[key.Length]); // TODO check if byte array is filled with 0s
+        var keyIV = new KeyIV(key, iv: new byte[16]); // TODO check if byte array is filled with 0s
         return await _algorithm.DecryptFromStreamAsync(keyIV, storageStream, DecryptConfig, cancellationToken);
 
         async Task<CryptoForestConfig> DecryptConfig(CryptoStream cryptoStream, CancellationToken cancellationToken)

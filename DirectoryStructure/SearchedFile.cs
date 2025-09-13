@@ -1,4 +1,6 @@
-﻿namespace CryptoForestLibrary.DirectoryStructure;
+using System.Text.Json.Serialization;
+
+namespace CryptoForestLibrary.DirectoryStructure;
 
 /// <summary>
 /// Used for storing the directory of a directory structure
@@ -7,18 +9,17 @@ public class SearchedFile
 {
     public string FileName { get; init; }
 
+    [JsonIgnore]
+    public string Path { get; init; }
+
     public long FileDataLength { get; init; }
 
     public byte[]? FileData { get; set; }
 
-    internal SearchedFile(string fileName, long fileDataLength)
+    internal SearchedFile(string fileName, long fileDataLength, string path)
     {
         FileName = fileName;
         FileDataLength = fileDataLength;
-    }
-
-    internal SearchedFile(string fileName, long fileDataLength, byte[] fileData) : this(fileName, fileDataLength)
-    {
-        FileData = fileData;
+        Path = path;
     }
 }

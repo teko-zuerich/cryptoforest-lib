@@ -107,7 +107,7 @@ public class CryptoForest<T>
     /// <exception cref="ItemAlreadyExistsException">Thrown if an item with the same itemKey already exists on the level</exception>
     public async Task<Guid> AddItemAsync(FileSearch fileSearch, string itemKey, Guid levelGuid, CancellationToken cancellationToken = default)
     {
-        if (!Directory.Exists(fileSearch.SearchedDirectory))
+        if (!fileSearch.SpecificFiles && !Directory.Exists(fileSearch.SearchedDirectory))
         {
             throw new DirectoryNotFoundException($"The directory {fileSearch.SearchedDirectory} doesn't exist");
         }

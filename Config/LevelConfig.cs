@@ -166,7 +166,7 @@ public class LevelConfig : ItemConfig
     /// <param name="guid">The GUID of the level</param>
     /// <returns>Returns whether or not a level with this GUID was found</returns>
     public bool HasLevel(Guid guid)
-        => Sublevels.Values.Any(sublevel => sublevel.EntryGuid == guid || sublevel.HasLevel(guid));
+        => EntryGuid == guid || Sublevels.Values.Any(sublevel => sublevel.EntryGuid == guid || sublevel.HasLevel(guid));
 
     /// <summary>
     /// Searches a level based on a GUID.
@@ -177,6 +177,11 @@ public class LevelConfig : ItemConfig
     /// <exception cref="LevelNotFoundException">Thrown if the level cannot be found</exception>
     public LevelConfig GetLevel(Guid guid)
     {
+        if (EntryGuid == guid)
+        {
+            return this;
+        }
+
         var level = Sublevels.Values.SingleOrDefault(level => level.EntryGuid == guid);
         if (level == null)
         {

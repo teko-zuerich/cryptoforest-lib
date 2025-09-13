@@ -1,4 +1,4 @@
-﻿namespace CryptoForestLibrary.Config;
+namespace CryptoForestLibrary.Config;
 
 /// <summary>
 /// Used to hold an immutable Key and IV
@@ -19,8 +19,8 @@ public class KeyIV
     /// Checks whether or not the Key and IV is valid or not.
     /// The length must be specified in bytes so 256 bits would be 32 bytes
     /// </summary>
-    /// <param name="expectedLength">The expected byte length</param>
+    /// <param name="expectedLength">The expected key byte length</param>
     /// <returns>Returns the result of the check</returns>
     public bool Validate(int expectedLength)
-        => Key.Length == expectedLength && IV.Length == expectedLength;
+        => Key.Length == expectedLength && IV.Length == 16;
 }
