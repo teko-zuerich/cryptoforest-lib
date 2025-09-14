@@ -340,6 +340,7 @@ public class CryptoForest<T>
         {
             var levelGuid = GenerateSecureGuid();
             var level = new LevelConfig(levelGuid, new T().GenerateKeyIV(), parentLevel.KeyIV);
+            parentLevel.Sublevels.Add(levelKey, level);
             await parentLevel.SaveConfigAsync(_cryptograph, _storage, cancellationToken);
             await level.SaveConfigAsync(_cryptograph, _storage, cancellationToken);
 
