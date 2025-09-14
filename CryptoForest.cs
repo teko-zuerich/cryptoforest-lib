@@ -299,7 +299,7 @@ public class CryptoForest<T>
     /// <exception cref="LevelNotFoundException">Thrown when the level with the newLevelGuid could not be found in the structure</exception>
     public async Task MoveItemAsync(Guid itemGuid, Guid newLevelGuid, CancellationToken cancellationToken = default)
     {
-        if (_baseLevel.HasItem(itemGuid))
+        if (!_baseLevel.HasItem(itemGuid))
         {
             throw new ItemNotFoundException(itemGuid);
         }

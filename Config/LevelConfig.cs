@@ -262,7 +262,7 @@ public class LevelConfig : ItemConfig
             throw new LevelNotFoundException(guid);
         }
 
-        return level;
+        return this;
     }
 
     /// <summary>
