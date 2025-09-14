@@ -22,4 +22,6 @@ public class SearchedFile
         FileDataLength = fileDataLength;
         Path = path;
     }
+
+    public SearchedFile() : this(string.Empty, 0, string.Empty) { }
 }

@@ -32,7 +32,7 @@ internal static class CryptoStreamExtensions
         var currentlyRead = await cryptoStream.ReadAsync(currentFileData, cancellationToken);
         while (currentlyRead > 0)
         {
-            await writeStream.WriteAsync(currentFileData, cancellationToken);
+            await writeStream.WriteAsync(currentFileData, 0, currentlyRead, cancellationToken);
             remainingFileLength -= currentlyRead;
             if (remainingFileLength < 10485760)
             {

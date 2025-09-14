@@ -1,4 +1,4 @@
-﻿namespace CryptoForestLibrary.DirectoryStructure;
+namespace CryptoForestLibrary.DirectoryStructure;
 
 /// <summary>
 /// Used for storing the directory of a directory structure
@@ -17,4 +17,6 @@ public class SearchedDirectory
         ChildDirectories = [];
         ChildFiles = [];
     }
+
+    public SearchedDirectory() : this(string.Empty) { }
 }
