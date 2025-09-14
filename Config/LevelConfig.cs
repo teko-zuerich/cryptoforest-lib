@@ -325,49 +325,44 @@ public class LevelConfig : ItemConfig
     /// </summary>
     /// <param name="searchString">The string to search for</param>
     /// <returns>Returns the found levels and items ordered by name</returns>
-    public Dictionary<string, ItemConfig> SearchItems(string searchString)
+    public IEnumerable<KeyValuePair<string, ItemConfig>> SearchItems(string searchString)
     {
-        var foundItems = new Dictionary<string, ItemConfig>();
-        var foundLevels = new Dictionary<string, LevelConfig>();
+        var foundItems = new List<KeyValuePair<string, ItemConfig>>();
+        var foundLevels = new List<KeyValuePair<string, ItemConfig>>();
         SearchItemsInLevel(this, searchString);
 
         // Orders the dictionaries by name
         // https://stackoverflow.com/questions/289/how-do-you-sort-a-dictionary-by-value
         var orderedLevels = from level in foundLevels
-                            orderby level.Value ascending
+                            orderby level.Key ascending
                             select level;
         var orderedItems = from item in foundItems
-                           orderby item.Value ascending
+                           orderby item.Key ascending
                            select item;
 
-        // Combines the two dictionaries to one single dictionary
-        var searchResult = new Dictionary<string, ItemConfig>();
-        foreach (var level in orderedLevels)
-        {
-            searchResult.Add(level.Key, level.Value);
-        }
-
-        foreach (var item in orderedItems)
-        {
-            searchResult.Add(item.Key, item.Value);
-        }
-
-        return searchResult;
+        // Combine the two lists
+        return [.. orderedLevels, .. orderedItems];
 
         // Recursively searches items and levels while going through the whole tree structure
         void SearchItemsInLevel(LevelConfig level, string searchString)
         {
-            foreach (var foundItem in Items.Where(item => item.Key.Contains(searchString, StringComparison.OrdinalIgnoreCase)))
+            var itemsDictionary = new Dictionary<string, ItemConfig>();
+            var levelsDictionary = new Dictionary<string, ItemConfig>();
+
+            foreach (var foundItem in level.Items.Where(item => item.Key.Contains(searchString, StringComparison.OrdinalIgnoreCase)))
             {
-                foundItems.Add(foundItem.Key, foundItem.Value);
+                itemsDictionary.Add(foundItem.Key, foundItem.Value);
             }
 
-            foreach (var foundLevel in Sublevels.Where(level => level.Key.Contains(searchString, StringComparison.OrdinalIgnoreCase)))
+            foreach (var foundLevel in level.Sublevels.Where(level => level.Key.Contains(searchString, StringComparison.OrdinalIgnoreCase)))
             {
-                foundLevels.Add(foundLevel.Key, foundLevel.Value);
+                levelsDictionary.Add(foundLevel.Key, foundLevel.Value);
             }
 
-            foreach (var sublevel in Sublevels.Values)
+            foundItems.AddRange([..  itemsDictionary]);
+            foundLevels.AddRange([.. levelsDictionary]);
+
+            foreach (var sublevel in level.Sublevels.Values)
             {
                 SearchItemsInLevel(sublevel, searchString);
             }
