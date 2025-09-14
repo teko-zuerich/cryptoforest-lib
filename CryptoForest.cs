@@ -367,14 +367,24 @@ public class CryptoForest<T>
 
         try
         {
+            var parentLevel = _baseLevel.GetLevelOfLevel(levelGuid);
+            var level = parentLevel.Sublevels.Single(l => l.Value.EntryGuid == levelGuid);
+            foreach (var subLevel in level.Value.Sublevels)
+            {
+                await RemoveLevelAsync(subLevel.Value.EntryGuid, cancellationToken);
+            }
+
+            foreach (var item in level.Value.Items)
+            {
+                await RemoveItemAsync(item.Value.EntryGuid, cancellationToken);
+            }
+
             // We should check first if the entry exists before removing it as otherwise it would be impossible to remove an entry if the entry in the storage was removed already
             if (_storage.EntryExists(levelGuid))
             {
                 await _storage.RemoveEntryAsync(levelGuid, cancellationToken);
             }
 
-            var parentLevel = _baseLevel.GetLevelOfLevel(levelGuid);
-            var level = parentLevel.Sublevels.Single(l => l.Value.EntryGuid == levelGuid);
             parentLevel.Sublevels.Remove(level.Key);
             await parentLevel.SaveConfigAsync(_cryptograph, _storage, cancellationToken);
 
