@@ -356,27 +356,32 @@ public class CryptoForest<T>
     /// Removes a level from the CryptoForest.
     /// </summary>
     /// <param name="levelGuid">The GUID of the level to remove</param>
-    /// <returns>Returns true if the removal was successfull</returns>
+    /// <returns>Returns the guids of the items and levels which could be removed successfully</returns>
     /// <exception cref="LevelNotFoundException">Thrown when the level to remove could not be found</exception>
-    public async Task<bool> RemoveLevelAsync(Guid levelGuid, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Guid>> RemoveLevelAsync(Guid levelGuid, CancellationToken cancellationToken = default)
     {
         if (!_baseLevel.HasLevel(levelGuid))
         {
             throw new LevelNotFoundException(levelGuid);
         }
 
+        var removedGuids = new List<Guid>();
         try
         {
             var parentLevel = _baseLevel.GetLevelOfLevel(levelGuid);
             var level = parentLevel.Sublevels.Single(l => l.Value.EntryGuid == levelGuid);
             foreach (var subLevel in level.Value.Sublevels)
             {
-                await RemoveLevelAsync(subLevel.Value.EntryGuid, cancellationToken);
+                removedGuids.AddRange(await RemoveLevelAsync(subLevel.Value.EntryGuid, cancellationToken));
             }
 
             foreach (var item in level.Value.Items)
             {
-                await RemoveItemAsync(item.Value.EntryGuid, cancellationToken);
+                var success = await RemoveItemAsync(item.Value.EntryGuid, cancellationToken);
+                if (success)
+                {
+                    removedGuids.Add(item.Value.EntryGuid);
+                }
             }
 
             // We should check first if the entry exists before removing it as otherwise it would be impossible to remove an entry if the entry in the storage was removed already
@@ -387,12 +392,13 @@ public class CryptoForest<T>
 
             parentLevel.Sublevels.Remove(level.Key);
             await parentLevel.SaveConfigAsync(_cryptograph, _storage, cancellationToken);
+            removedGuids.Add(level.Value.EntryGuid);
 
-            return true;
+            return removedGuids;
         }
         catch
         {
-            return false;
+            return removedGuids;
         }
     }
 

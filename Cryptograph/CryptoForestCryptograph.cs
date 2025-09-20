@@ -38,7 +38,7 @@ internal class CryptoForestCryptograph<T>
     internal async Task EncryptConfigAsync(CryptoForestConfig config, byte[] key, string filePath, CancellationToken cancellationToken)
     {
         using var storageStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
-        var keyIV = new KeyIV(key, iv: new byte[16]); // TODO check if byte array is filled with 0s
+        var keyIV = new KeyIV(key, iv: new byte[16]);
         await _algorithm.EncryptToStreamAsync(keyIV, storageStream, EncryptConfig, cancellationToken);
         await _storage.FinalizeAsync(storageStream, cancellationToken);
 
@@ -135,7 +135,7 @@ internal class CryptoForestCryptograph<T>
     internal async Task<CryptoForestConfig> DecryptConfigAsync(byte[] key, string filePath, CancellationToken cancellationToken)
     {
         using var storageStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-        var keyIV = new KeyIV(key, iv: new byte[16]); // TODO check if byte array is filled with 0s
+        var keyIV = new KeyIV(key, iv: new byte[16]);
         return await _algorithm.DecryptFromStreamAsync(keyIV, storageStream, DecryptConfig, cancellationToken);
 
         async Task<CryptoForestConfig> DecryptConfig(CryptoStream cryptoStream, CancellationToken cancellationToken)

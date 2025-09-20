@@ -1,13 +1,13 @@
-﻿namespace CryptoForestLibrary.Config;
+namespace CryptoForestLibrary.Config;
 
 /// <summary>
 /// Used for exporting levels of a CryptoForest
 /// </summary>
 internal class CryptoForestConfig
 {
-    internal required Guid ConfigGuid { get; init; }
+    public required Guid ConfigGuid { get; init; }
 
-    internal required KeyIV KeyIV { get; init; }
+    public required KeyIV KeyIV { get; init; }
 
-    internal required List<CryptoForestConfig> Sublevels { get; init; }
+    public required List<CryptoForestConfig> Sublevels { get; init; }
 }
