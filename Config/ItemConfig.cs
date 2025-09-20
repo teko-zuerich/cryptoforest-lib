@@ -5,11 +5,11 @@ namespace CryptoForestLibrary.Config;
 /// </summary>
 public class ItemConfig
 {
-    public required Guid EntryGuid { get; set; }
+    public Guid EntryGuid { get; set; }
 
-    public required KeyIV KeyIV { get; set; }
+    public KeyIV KeyIV { get; set; }
 
-    public required ItemType ItemType { get; set; }
+    public ItemType ItemType { get; set; }
 
     public ItemConfig(Guid entryGuid, KeyIV keyIV, ItemType itemType)
     {
