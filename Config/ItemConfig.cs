@@ -1,15 +1,15 @@
-﻿namespace CryptoForestLibrary.Config;
+namespace CryptoForestLibrary.Config;
 
 /// <summary>
 /// Used to store item values in an immutable config
 /// </summary>
 public class ItemConfig
 {
-    public Guid EntryGuid { get; }
+    public Guid EntryGuid { get; set; }
 
-    public KeyIV KeyIV { get; }
+    public KeyIV KeyIV { get; set; }
 
-    public ItemType ItemType { get; }
+    public ItemType ItemType { get; set; }
 
     public ItemConfig(Guid entryGuid, KeyIV keyIV, ItemType itemType)
     {
@@ -17,4 +17,6 @@ public class ItemConfig
         KeyIV = keyIV;
         ItemType = itemType;
     }
+
+    public ItemConfig() { }
 }

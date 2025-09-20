@@ -48,16 +48,16 @@ public class LevelConfig : ItemConfig
         }
     }
 
-    internal Dictionary<string, ItemConfig> Items { get; }
+    public Dictionary<string, ItemConfig> Items { get; set; }
 
     [JsonIgnore]
     internal Dictionary<string, LevelConfig> Sublevels { get; }
-    private Dictionary<string, Guid>? _sublevelNameMappings;
+    internal Dictionary<string, Guid>? _sublevelNameMappings;
     /// <summary>
     /// Stores the sublevel name mappings as they need to be exported.
     /// When the config is loaded and this property is set the Sublevels dictionary will be adjusted to reflect the actual names.
     /// </summary>
-    internal Dictionary<string, Guid> SublevelNameMappings
+    public Dictionary<string, Guid> SublevelNameMappings
     {
         get
         {
@@ -75,21 +75,24 @@ public class LevelConfig : ItemConfig
         }
     }
 
-    internal LevelConfig(CryptoForestConfig config) : base(config.ConfigGuid, config.KeyIV, ItemType.Level)
+    internal LevelConfig(CryptoForestConfig config, ICryptoForestStorage storage) : base(config.ConfigGuid, config.KeyIV, ItemType.Level)
     {
         Items = [];
         Sublevels = [];
 
         // Creates the sublevels
-        var sublevelConfigs = config.Sublevels.Select(l => new LevelConfig(l, config.KeyIV)).ToArray();
+        var sublevelConfigs = config.Sublevels.Select(l => new LevelConfig(l, storage, config.KeyIV)).ToArray();
         for (var i = 0; i < sublevelConfigs.Length; i++)
         {
-            // temp is used here as the names of the sublevel aren't known until they are decrypted
-            Sublevels.Add($"temp{i}", sublevelConfigs[i]);
+            if (storage.EntryExists(sublevelConfigs[i].EntryGuid))
+            {
+                // temp is used here as the names of the sublevel aren't known until they are decrypted
+                Sublevels.Add($"temp{i}", sublevelConfigs[i]);
+            }
         }
     }
 
-    internal LevelConfig(CryptoForestConfig config, KeyIV parentKeyIV) : this(config)
+    internal LevelConfig(CryptoForestConfig config, ICryptoForestStorage storage, KeyIV parentKeyIV) : this(config, storage)
     {
         _previousKey = parentKeyIV;
     }
@@ -101,6 +104,12 @@ public class LevelConfig : ItemConfig
         Sublevels = [];
     }
 
+    public LevelConfig()
+    {
+        Items = [];
+        Sublevels = [];
+    }
+
     internal async Task LoadConfigAsync<T>(CryptoForestCryptograph<T> cryptograph, CancellationToken cancellationToken)
         where T : ICryptoForestAlgorithm, new()
     {
@@ -108,23 +117,28 @@ public class LevelConfig : ItemConfig
         var levelConfigJson = await cryptograph.DecryptTextAsync(EntryGuid, XorKeyIV, cancellationToken);
         var levelConfig = JsonSerializer.Deserialize<LevelConfig>(levelConfigJson)!;
 
-        // Update sublevel names
-        var sublevels = new Dictionary<string, LevelConfig>();
-        foreach (var nameMapping in _sublevelNameMappings!)
+        // Add items
+        foreach (var item in levelConfig.Items)
         {
-            sublevels.Add(nameMapping.Key, Sublevels.Values.Single(l => l.EntryGuid == nameMapping.Value));
+            Items.Add(item.Key, item.Value);
+        }
+
+        // Update sublevel names and load sublevels
+        var sublevels = new Dictionary<string, LevelConfig>();
+        foreach (var sublevelNameMapping in levelConfig._sublevelNameMappings!)
+        {
+            var sublevel = Sublevels.Values.SingleOrDefault(l => l.EntryGuid == sublevelNameMapping.Value);
+            if (sublevel != null)
+            {
+                sublevels.Add(sublevelNameMapping.Key, sublevel);
+            }
         }
 
         Sublevels.Clear();
         foreach (var sublevel in sublevels)
         {
             Sublevels.Add(sublevel.Key, sublevel.Value);
-        }
-
-        // Add items
-        foreach (var item in levelConfig.Items)
-        {
-            Items.Add(item.Key, item.Value);
+            await sublevel.Value.LoadConfigAsync(cryptograph, cancellationToken);
         }
     }
 

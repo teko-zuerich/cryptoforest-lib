@@ -35,7 +35,7 @@ public class CryptoForest<T>
         try
         {
             var config = _cryptograph.DecryptConfigAsync(key, filePath, cancellationToken: default).Result;
-            _baseLevel = new LevelConfig(config);
+            _baseLevel = new LevelConfig(config, storage);
             _baseLevel.LoadConfigAsync(_cryptograph, cancellationToken: default).GetAwaiter().GetResult();
         }
         catch
@@ -67,7 +67,7 @@ public class CryptoForest<T>
             ConfigGuid = GenerateSecureGuid(storage),
             KeyIV = new T().GenerateKeyIV(),
             Sublevels = []
-        }));
+        }, storage));
 
     /// <summary>
     /// Get the LevelConfig of the base level which can be used for finding files and levels.
@@ -505,5 +505,5 @@ public class AesCryptoForest : CryptoForest<CryptoForestAesAlgorithm>
             ConfigGuid = GenerateSecureGuid(storage),
             KeyIV = new CryptoForestAesAlgorithm().GenerateKeyIV(),
             Sublevels = []
-        }));
+        }, storage));
 }
