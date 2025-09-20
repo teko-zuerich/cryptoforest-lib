@@ -5,6 +5,8 @@ namespace CryptoForestLibrary.Config;
 /// </summary>
 public class KeyIV
 {
+    public static readonly KeyIV Empty = new([], []);
+
     public byte[] Key { get; }
 
     public byte[] IV { get; }
