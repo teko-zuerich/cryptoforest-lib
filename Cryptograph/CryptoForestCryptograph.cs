@@ -142,7 +142,6 @@ internal class CryptoForestCryptograph<T>
         {
             using var memoryStream = new MemoryStream();
             await cryptoStream.CopyToAsync(memoryStream, cancellationToken);
-            //await memoryStream.FlushAsync(cancellationToken); // TODO check if needed
             var configJson = Encoding.ASCII.GetString(memoryStream.ToArray());
             return JsonSerializer.Deserialize<CryptoForestConfig>(configJson)!;
         }
@@ -163,7 +162,6 @@ internal class CryptoForestCryptograph<T>
         {
             using var memoryStream = new MemoryStream();
             await cryptoStream.CopyToAsync(memoryStream, cancellationToken);
-            //await memoryStream.FlushAsync(cancellationToken); // TODO check if needed
             return Encoding.UTF8.GetString(memoryStream.ToArray());
         }
     }
