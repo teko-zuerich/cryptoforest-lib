@@ -40,7 +40,7 @@ internal class CryptoForestCryptograph<T>
         using var storageStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
         var keyIV = new KeyIV(key, iv: new byte[16]);
         await _algorithm.EncryptToStreamAsync(keyIV, storageStream, EncryptConfig, cancellationToken);
-        await _storage.FinalizeAsync(storageStream, cancellationToken);
+        await _storage.FinalizeAsync(config.ConfigGuid, storageStream, cancellationToken);
 
         async Task EncryptConfig(CryptoStream cryptoStream, CancellationToken cancellationToken)
         {
@@ -68,7 +68,7 @@ internal class CryptoForestCryptograph<T>
         using var storageStream = _storage.GetStream(entryGuid, asReadonly: false);
         var keyIV = usedKeyIV ?? _algorithm.GenerateKeyIV();
         await _algorithm.EncryptToStreamAsync(keyIV, storageStream, EncryptText, cancellationToken);
-        await _storage.FinalizeAsync(storageStream, cancellationToken);
+        await _storage.FinalizeAsync(entryGuid, storageStream, cancellationToken);
 
         return keyIV;
 
@@ -90,7 +90,7 @@ internal class CryptoForestCryptograph<T>
         using var storageStream = _storage.GetStream(entryGuid, asReadonly: false);
         var keyIV = _algorithm.GenerateKeyIV();
         await _algorithm.EncryptToStreamAsync(keyIV, storageStream, EncryptFiles, cancellationToken);
-        await _storage.FinalizeAsync(storageStream, cancellationToken);
+        await _storage.FinalizeAsync(entryGuid, storageStream, cancellationToken);
 
         return keyIV;
 

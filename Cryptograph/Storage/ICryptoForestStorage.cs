@@ -17,8 +17,9 @@ public interface ICryptoForestStorage
     /// Called after the encrpytions are finished in the CryptoForestCryptograph.
     /// Can be used to define actions for the storage after the encryptions have finished.
     /// </summary>
+    /// <param name="entryGuid">The GUID of the entry the stream belongs to</param>
     /// <param name="storageStream">The current storage stream</param>
-    public Task FinalizeAsync(Stream storageStream, CancellationToken cancellationToken);
+    public Task FinalizeAsync(Guid entryGuid, Stream storageStream, CancellationToken cancellationToken);
 
     /// <summary>
     /// Called to determine if an entry already exists in the storage before creating it.

@@ -48,7 +48,7 @@ public class CryptoForestFileStorage : ICryptoForestStorage
         return new FileStream(entryPath, FileMode.Create, FileAccess.Write);
     }
 
-    public Task FinalizeAsync(Stream storageStream, CancellationToken cancellationToken)
+    public Task FinalizeAsync(Guid entryGuid, Stream storageStream, CancellationToken cancellationToken)
         => Task.CompletedTask;
 
     /// <summary>
@@ -63,13 +63,13 @@ public class CryptoForestFileStorage : ICryptoForestStorage
     /// Removes the file for the corresponding entry GUID.
     /// </summary>
     /// <param name="entryGuid">The GUID of the entry to remove</param>
-    /// <exception cref="FileNotFoundException">Thrown when the file for the entryGuid does not exist</exception>
+    /// <exception cref="ItemNotFoundException">Thrown when the file for the entryGuid does not exist</exception>
     public Task RemoveEntryAsync(Guid entryGuid, CancellationToken cancellationToken)
     {
         var entryPath = $"{_cryptoForestDirectory}/{entryGuid}";
         if (!File.Exists(entryPath))
         {
-            throw new FileNotFoundException($"The entry for GUID {entryGuid} could not be found");
+            throw new ItemNotFoundException(entryGuid);
         }
 
         File.Delete(entryPath);
