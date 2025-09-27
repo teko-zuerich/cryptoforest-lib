@@ -49,7 +49,7 @@ internal static class CryptoStreamExtensions
     /// Skips a whole file in the CryptoStream by reading the data beloning to it without writing it.
     /// </summary>
     /// <param name="fileLength">>The length of the file to skip</param>
-    internal static async Task SkipFileAsnyc(this CryptoStream cryptoStream, long fileLength, CancellationToken cancellationToken)
+    internal static async Task SkipFileAsync(this CryptoStream cryptoStream, long fileLength, CancellationToken cancellationToken)
     {
         var remainingFileLength = fileLength;
         var currentFileData = new byte[remainingFileLength < 10485760 ? remainingFileLength : 10485760];

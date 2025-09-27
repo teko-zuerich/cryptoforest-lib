@@ -40,7 +40,6 @@ internal class CryptoForestCryptograph<T>
         using var storageStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
         var keyIV = new KeyIV(key, iv: new byte[16]);
         await _algorithm.EncryptToStreamAsync(keyIV, storageStream, EncryptConfig, cancellationToken);
-        await _storage.FinalizeAsync(config.ConfigGuid, storageStream, cancellationToken);
 
         async Task EncryptConfig(CryptoStream cryptoStream, CancellationToken cancellationToken)
         {
@@ -307,7 +306,7 @@ internal class CryptoForestCryptograph<T>
                     File.Delete(filePath);
                     break;
                 case OnFileExists.Skip:
-                    await cryptoStream.SkipFileAsnyc(fileLength, cancellationToken);
+                    await cryptoStream.SkipFileAsync(fileLength, cancellationToken);
                     return false;
             }
         }

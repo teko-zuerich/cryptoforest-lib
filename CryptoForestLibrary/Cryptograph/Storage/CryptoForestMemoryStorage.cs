@@ -5,7 +5,7 @@ namespace CryptoForestLibrary.Cryptograph.Storage;
 /// <summary>
 /// The memory implementation for the CryptoForest used for testing
 /// </summary>
-public class CryptoForestMemoryStorage : ICryptoForestStorage
+public class CryptoForestMemoryStorage : ICryptoForestStorage, IDisposable
 {
     public Dictionary<Guid, byte[]> _storage = new();
 
@@ -67,5 +67,30 @@ public class CryptoForestMemoryStorage : ICryptoForestStorage
         _storage.Remove(entryGuid);
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Used in tests to get the amount of entries in the storage
+    /// </summary>
+    /// <returns>Returns the amount of entries in the dictionary</returns>
+    public int GetEntryCount()
+        => _storage.Count;
+
+    /// <summary>
+    /// Used in tests to get the size of an encrypted entry in the storage
+    /// </summary>
+    /// <param name="entryGuid">The entry GUID to get the size from</param>
+    /// <returns>Returns the size of the entry or 0 if the entry does not exist</returns>
+    public int GetEntrySize(Guid entryGuid)
+        => _storage.ContainsKey(entryGuid) ? _storage[entryGuid].Length : 0;
+
+    /// <summary>
+    /// Clears the dictionary and calls the garbage collector manually to free the memory.
+    /// This method is not automatically called in the library but instead must be called by the creator of the instance.
+    /// </summary>
+    public void Dispose()
+    {
+        _storage.Clear();
+        GC.Collect();
     }
 }

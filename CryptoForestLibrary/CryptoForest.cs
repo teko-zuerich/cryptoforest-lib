@@ -54,6 +54,7 @@ public class CryptoForest<T>
         _storage = storage;
         _cryptograph = new CryptoForestCryptograph<T>(storage);
         _baseLevel = baseLevel;
+        _baseLevel.SaveConfigAsync(_cryptograph, _storage, cancellationToken: default).GetAwaiter().GetResult();
     }
 
     /// <summary>
@@ -245,7 +246,7 @@ public class CryptoForest<T>
     /// <param name="onFileExists">Specifies what should happen should a file already exist at the target location</param>
     /// <returns>Returns the decrypted SearchDirectory without data</returns>
     /// <exception cref="ItemNotFoundException">Thrown when the item with the itemGuid could not be found in the structure</exception>
-    /// <exception cref="InvalidOperationException">Thrown if the item was found but was not of the expected type Files</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the item was found but was not of the expected type Files or if a file already exists and OnFileExists is Throw</exception>
     public async Task<SearchedDirectory> GetDataItemAsync(Guid itemGuid, string saveDirectory, OnFileExists onFileExists = OnFileExists.Throw, CancellationToken cancellationToken = default)
     {
         return await GetItemBaseAsync(itemGuid, DecryptItemAsync, ItemType.Files, cancellationToken);
@@ -255,6 +256,10 @@ public class CryptoForest<T>
             try
             {
                 return await _cryptograph.DecryptFilesAsync(itemGuid, item.KeyIV, saveDirectory, onFileExists, cancellationToken);
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
             }
             catch
             {

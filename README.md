@@ -40,5 +40,5 @@ The other way is to create it with more specific parameters. Additional paramete
 
 ## How to customize the CryptoForest?
 There are two possible places where the CryptoForest library can be customized. These two places are the storage where the encrypted data is stored and the algorithm used.
-- To customize the storage the interface [`ICryptoForestStorage`](Cryptograph/Storage/ICryptoForestStorage.cs) can be used
-- To customize the algorithm the interface [`ICryptoForestAlgorithm`](Cryptograph/Algorithm/ICryptoForestAlgorithm.cs) can be used
+- To customize the storage the interface [`ICryptoForestStorage`](CryptoForestLibrary/Cryptograph/Storage/ICryptoForestStorage.cs) can be used
+- To customize the algorithm the interface [`ICryptoForestAlgorithm`](CryptoForestLibrary/Cryptograph/Algorithm/ICryptoForestAlgorithm.cs) can be used
