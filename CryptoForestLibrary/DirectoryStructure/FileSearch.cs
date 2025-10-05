@@ -71,8 +71,8 @@ public class FileSearch
         var fullPath = SearchedDirectory + (currentPath != string.Empty && !SearchedDirectory.EndsWith('/') && !SearchedDirectory.EndsWith('\\') ? "/" : "") + currentPath;
         if (!SpecificFiles)
         {
-            var files = Directory.GetFiles(fullPath).Where(f => IncludePaths ? SearchedPaths.Contains(f) : !SearchedPaths.Contains(f));
-            var directories = Directory.GetDirectories(fullPath).Where(d => IncludePaths ? SearchedPaths.Contains(d) : !SearchedPaths.Contains(d));
+            var files = Directory.GetFiles(fullPath).Where(f => IncludePaths ? SearchedPaths.Any(sp => f.Contains(sp)) : !SearchedPaths.Any(sp => f.Contains(sp)));
+            var directories = Directory.GetDirectories(fullPath).Where(d => IncludePaths ? SearchedPaths.Any(sp => d.Contains(sp)) : !SearchedPaths.Any(sp => d.Contains(sp)));
 
             foreach (var file in files)
             {

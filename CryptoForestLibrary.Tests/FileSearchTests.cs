@@ -38,7 +38,7 @@ public class FileSearchTests
     public void GetDirectoryWithExclude()
     {
         var path = $"{AppDomain.CurrentDomain.BaseDirectory}/Resources";
-        var fileSearch = new FileSearch(path, ["/Icons"], includePaths: false);
+        var fileSearch = new FileSearch(path, ["/Icons", "\\Icons"], includePaths: false);
         var searchedDirectory = fileSearch.GetDirectoryAndFileStructure();
         Assert.True(searchedDirectory.ChildFiles.Count == 2);
         Assert.NotNull(searchedDirectory.ChildFiles.SingleOrDefault(f => f.FileName == "testFile.txt"));

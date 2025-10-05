@@ -209,26 +209,12 @@ public class CryptoForestTests : IDisposable
 
         var tempPath = $"{AppDomain.CurrentDomain.BaseDirectory}/Temp";
         Directory.CreateDirectory(tempPath);
-        File.Create($"{tempPath}/testFile.txt");
+        await File.Create($"{tempPath}/testFile.txt").DisposeAsync();
         await _cryptoForest.GetDataItemAsync(itemGuid, tempPath, OnFileExists.Replace);
 
-        var originalSize = 0l;
-        AddFileSizes(fileSearch.GetDirectoryAndFileStructure());
+        var originalSize = new FileInfo($"{path}/testFile.txt").Length;
         var decryptedSize = new FileInfo($"{tempPath}/testFile.txt").Length;
         Assert.Equal(originalSize, decryptedSize);
-
-        void AddFileSizes(SearchedDirectory searchedDirectory)
-        {
-            foreach (var file in searchedDirectory.ChildFiles)
-            {
-                originalSize += new FileInfo(file.Path).Length;
-            }
-
-            foreach (var diretory in searchedDirectory.ChildDirectories)
-            {
-                AddFileSizes(diretory);
-            }
-        }
     }
 
     [Fact]
@@ -272,8 +258,7 @@ public class CryptoForestTests : IDisposable
         Directory.CreateDirectory(tempPath);
         await _cryptoForest.ExportConfigAsync([_baseLevelGuid, levelGuid], hashBytes, $"{tempPath}/test");
 
-        using var storage = new CryptoForestMemoryStorage();
-        var cryptoForest = new AesCryptoForest(storage, hashBytes, $"{tempPath}/test");
+        var cryptoForest = new AesCryptoForest(_storage, hashBytes, $"{tempPath}/test");
     }
 
     public void Dispose()
