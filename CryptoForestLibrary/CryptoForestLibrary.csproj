@@ -5,6 +5,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AssemblyName>CryptoForest</AssemblyName>
+    <Version>1.0.0.1</Version>
+    <Company>Silvan Bauer</Company>
+    <Copyright>Copyright © Silvan Bauer 2025</Copyright>
   </PropertyGroup>
 
 </Project>
