@@ -3,7 +3,7 @@ namespace CryptoForestLibrary.Config;
 /// <summary>
 /// Used to store item values in an immutable config
 /// </summary>
-public class ItemConfig
+public record ItemConfig
 {
     public Guid EntryGuid { get; set; }
 
@@ -18,5 +18,6 @@ public class ItemConfig
         ItemType = itemType;
     }
 
+    // Needed for JSON deserialization
     public ItemConfig() { }
 }

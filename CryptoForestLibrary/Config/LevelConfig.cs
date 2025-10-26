@@ -10,7 +10,7 @@ namespace CryptoForestLibrary.Config;
 /// <summary>
 /// Used for storing the values of a level
 /// </summary>
-public class LevelConfig : ItemConfig
+public record LevelConfig : ItemConfig
 {
     private KeyIV? _previousKey;
 

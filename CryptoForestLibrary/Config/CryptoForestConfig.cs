@@ -3,7 +3,7 @@ namespace CryptoForestLibrary.Config;
 /// <summary>
 /// Used for exporting levels of a CryptoForest
 /// </summary>
-internal class CryptoForestConfig
+internal record CryptoForestConfig
 {
     public required Guid ConfigGuid { get; init; }
 

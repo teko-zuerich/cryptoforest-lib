@@ -3,7 +3,7 @@ namespace CryptoForestLibrary.Config;
 /// <summary>
 /// Used to hold an immutable Key and IV
 /// </summary>
-public class KeyIV
+public record KeyIV
 {
     public static readonly KeyIV Empty = new([], []);
 
